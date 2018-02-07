@@ -1,3 +1,48 @@
 # DLTPulseGenerator
-
+Copyright (c) 2016-2018 Danny Petschke (danny.petschke@uni-wuerzburg.de)<br><br>
 <b>DLTPulseGenerator</b> - A Library for the Simulation of Lifetime-Spectra based on Detector-Output Pulses
+
+# Introduction
+
+The quantitative analysis of lifetime spectra relevant in both life- and material sciences presents one of the ill-posed inverse problems and leads to most sophisticated requirements on the hardware-specifications of the setup as well as on the analysis algorithms.<br><br>
+<b>DLTPulseGenerator is written in native C++ 11</b> (ISO/IEC 14882:2011) and provides the simulation of lifetime-spectra according to the measurement setup: i.e. the kind of detectors (PMTs - Photomultiplier, Diodes, such as APDs - Avalanche Photodiodes) and the acquisition hardware (mostly the combination of ADC and FPGA). 
+The simulation is based on pairs of non-TTL detector-pulses which require the Constant-Fraction Principle (CFD) for the determination of the exact timing signal.<br><br>
+
+The DLTPulseGenerator library provides optionally a compilation as static or linked library to make it easy accessible to other programming languages: <i>Matlab</i> (for [mex-library](https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html)) or <i>Python</i> (for [ctypes-library](https://docs.python.org/3/library/ctypes.html)). 
+
+# Example using Python
+
+A <b>C/C++ wrapper</b> for <i>Python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) which demonstrates the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html), calling functions from the linked library <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)), is provided.<br>
+[pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls the necessary functions of [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py) to receive and show up the generated pulses. Additionally, the Pulse-Height Spectra (PHS) are displayed. 
+
+# License (BSD-3-Clause)
+
+Redistribution and use in source and binary forms, with or without modification,<br> 
+are permitted provided that the following conditions are met:<br><br>
+
+ 1. Redistributions of source code must retain the above copyright notice<br>
+    this list of conditions and the following disclaimer.<br><br>
+
+ 2. Redistributions in binary form must reproduce the above copyright notice,<br> 
+    this list of conditions and the following disclaimer in the documentation<br> 
+    and/or other materials provided with the distribution.<br><br>
+
+ 3. Neither the name of the copyright holder "Danny Petschke" nor the names of its<br>  
+    contributors may be used to endorse or promote products derived from this software<br>  
+    without specific prior written permission.<br><br>
+
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS<br> 
+ OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<br> 
+ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE<br> 
+ COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<br> 
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF<br> 
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)<br> 
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR<br> 
+ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<br> 
+ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<br>
+ 
+ see also [BSD-3-Clause License](https://opensource.org/licenses/BSD-3-Clause)
+
+
+
