@@ -1,2 +1,3 @@
 # DLTPulseGenerator
-DLTPulseGenerator - A Library for the Simulation of Lifetime-Spectra based on Detector-Output Pulses
+
+<b>DLTPulseGenerator</b> - A Library for the Simulation of Lifetime-Spectra based on Detector-Output Pulses
