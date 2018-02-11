@@ -47,11 +47,16 @@ int main() {
   }
 }
 ```
+How to inherit from class DLTPulseGenerator to handle errors using callback function see [DLTPulseGeneratorApp.h/.cpp](https://github.com/dpscience/DLTPulseGenerator/blob/master/DLTPulseGenerator/example/AppDLTPulseGenerator/AppDLTPulseGenerator/DLTPulseGeneratorApp.h).  
 
 # Example using Python
 
 A <b>C/C++ wrapper</b> for <i>Python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) which demonstrates the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html), calling functions from the linked library <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)), is provided.<br>
-[pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls the necessary functions of [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py) to receive and show up the generated pulses. Additionally, the Pulse-Height Spectra (PHS) are displayed. 
+[pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls the necessary functions of [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py) to receive and show up the generated pulses. Additionally, the Pulse-Height Spectra (PHS) are displayed.<br><br> 
+
+requirements: [ctypes](https://docs.python.org/3/library/ctypes.html), [NumPy](http://www.numpy.org/), [matplotlib](https://matplotlib.org/) 
+
+[WinPython](https://sourceforge.net/projects/winpython/) meets all requirements. 
 
 # License (BSD-3-Clause)
 
