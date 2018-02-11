@@ -27,9 +27,9 @@ are permitted provided that the following conditions are met:<br><br>
     this list of conditions and the following disclaimer in the documentation<br> 
     and/or other materials provided with the distribution.<br><br>
 
- 3. Neither the name of the copyright holder "Danny Petschke" nor the names of its<br>  
-    contributors may be used to endorse or promote products derived from this software<br>  
-    without specific prior written permission.<br><br>
+ 3. Neither the name of the copyright holder "Danny Petschke" nor the names of 
+    its contributors may be used to endorse or promote products derived from 
+    this software without specific prior written permission.<br><br>
 
 
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS<br> 
