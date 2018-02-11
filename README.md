@@ -52,7 +52,6 @@ How to inherit from <i>class DLTPulseGenerator</i> to handle errors using the ca
 # Example using Python
 
 ![Generated Pulses](/pyDLTPulseGenerator/PulsesPythonAndPHS.png)
-
 A <b>C/C++ wrapper</b> for <i>Python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) which demonstrates the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html), calling functions from the linked library <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)), is provided.<br>
 [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls the necessary functions of [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py) to receive and show up the generated pulses. Additionally, the Pulse-Height Spectra (PHS) are displayed.<br><br> 
 
