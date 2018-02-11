@@ -47,7 +47,7 @@ int main() {
   }
 }
 ```
-How to inherit from class DLTPulseGenerator to handle errors using callback function see [DLTPulseGeneratorApp.h/.cpp](https://github.com/dpscience/DLTPulseGenerator/blob/master/DLTPulseGenerator/example/AppDLTPulseGenerator/AppDLTPulseGenerator/DLTPulseGeneratorApp.h).  
+How to inherit from <i>class DLTPulseGenerator</i> to handle errors using the callback function see [DLTPulseGeneratorApp.h/.cpp](https://github.com/dpscience/DLTPulseGenerator/blob/master/DLTPulseGenerator/example/AppDLTPulseGenerator/AppDLTPulseGenerator/DLTPulseGeneratorApp.h).  
 
 # Example using Python
 
