@@ -276,7 +276,7 @@ class DLTPulse:
     def __init__(self, riseTime_in_nanoSeconds = 5.0,
                  pulseWidth_in_nanoSeconds = 0.165,
                  delay_in_nanoSeconds = 65.0,
-                 amplitude_in_milliVolt = -500.0,
+                 amplitude_in_milliVolt = 500.0,
                  isPositiveSignalPolarity = True):
         self.m_riseTime_in_nanoSeconds = riseTime_in_nanoSeconds
         self.m_pulseWidth_in_nanoSeconds = pulseWidth_in_nanoSeconds
