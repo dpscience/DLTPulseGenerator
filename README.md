@@ -16,17 +16,35 @@ The DLTPulseGenerator library provides optionally a compilation as static or lin
 int main() {
   printf("How to easily implement DLTPulseGenerator library?\n\n");
 
-  DLTSetup	setup	= DLTSetup_DEMO; 
-  /* { 0.084932901f, 0.084932901f, 0.0025f, 0.25f, 200.0f, 1024 } */ 
-
-  DLTPulse	pulse	= DLTPulse_DEMO; 
-  /* { 5.0f, 0.165f, 500.0f, 65.0f, true } */
-
-  DLTPHS	phs	= DLTPHS_DEMO; 
-  /* { 190.0f, 90.0f, 150.0f, 25.0f, 190.0f, 90.0f, 150.0f, 25.0f } */
-
+  /* 1a. Define structs: */
+  DLTSetup setup                     = DLTSetup_DEMO; 
+  DLTPulse pulse                     = DLTPulse_DEMO; 
+  DLTPHS phs                         = DLTPHS_DEMO; 
   DLTSimulationInput simulationInput = DLTSimulationInput_DEMO; 
-  */ { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, 0.25f, 0.05f, true } */
+  
+  /* 1b. Set trigger-levels for branch A and B:
+  double triggerA_in_mV = 50.0;
+  double triggerB_in_mV = 50.0;
+  
+  /* 2. Initialize DLTPulseGenerator-class: */
+  DLTPulseGenerator * pulseGenerator = new DLTPulseGenerator(simulationInput, phs, setup, pulse, nullptr);
+  
+  /* 3. Receive pulses: */
+  DLTPulseF pulseA, pulseB;
+  
+  while (1) {
+    if ( pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV) ) {
+      /* all algorithms for exact timing determination and lifetime calculation, respectively, have to be placed here! */
+			/* const double timingA = CFD(pulseA);
+			   const double timingB = CFD(pulseA);
+
+			   const double lifetime = calcDifference(timingA, timingB);
+
+			   -> binning the lifetimes (MCA). */
+    }
+    else
+      break;
+  }
 }
 ```
 
