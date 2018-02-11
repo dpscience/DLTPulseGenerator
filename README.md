@@ -35,12 +35,12 @@ int main() {
   while (1) {
     if ( pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV) ) {
       /* all algorithms for exact timing determination and lifetime calculation, respectively, have to be placed here! */
-			/* const double timingA = CFD(pulseA);
-			   const double timingB = CFD(pulseA);
+      /* const double timingA = CFD(pulseA, level);
+	 const double timingB = CFD(pulseB, level);
 
-			   const double lifetime = calcDifference(timingA, timingB);
+	 const double lifetime = calcDifference(timingA, timingB);
 
-			   -> binning the lifetimes (MCA). */
+	 -> binning the lifetimes (MCA). */
     }
     else
       break;
