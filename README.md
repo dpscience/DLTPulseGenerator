@@ -58,6 +58,8 @@ requirements: [ctypes](https://docs.python.org/3/library/ctypes.html), [NumPy](h
 
 [WinPython](https://sourceforge.net/projects/winpython/) meets all requirements. 
 
+![Generated Pulses](/pyDLTPulseGenerator/PulsesPython.png)
+
 # License (BSD-3-Clause)
 
 Redistribution and use in source and binary forms, with or without modification,<br> 
