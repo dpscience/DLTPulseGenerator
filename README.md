@@ -12,7 +12,23 @@ The DLTPulseGenerator library provides optionally a compilation as static or lin
 
 # Example using C++
 
+```c++
+int main() {
+  printf("How to easily implement DLTPulseGenerator library?\n\n");
 
+  DLTSetup	setup	= DLTSetup_DEMO; 
+  /* { 0.084932901f, 0.084932901f, 0.0025f, 0.25f, 200.0f, 1024 } */ 
+
+  DLTPulse	pulse	= DLTPulse_DEMO; 
+  /* { 5.0f, 0.165f, 500.0f, 65.0f, true } */
+
+  DLTPHS	phs	= DLTPHS_DEMO; 
+  /* { 190.0f, 90.0f, 150.0f, 25.0f, 190.0f, 90.0f, 150.0f, 25.0f } */
+
+  DLTSimulationInput simulationInput = DLTSimulationInput_DEMO; 
+  */ { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, 0.25f, 0.05f, true } */
+}
+```
 
 # Example using Python
 
