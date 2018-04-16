@@ -8,7 +8,7 @@ The quantitative analysis of lifetime spectra relevant in both life and material
 <b>DLTPulseGenerator is written in native C++ 11</b> (ISO/IEC 14882:2011) and provides the simulation of lifetime spectra according to the measurement setup: i.e. the kind of detectors (PMTs - Photomultiplier, Diodes, such as APDs - Avalanche Photodiodes) and the acquisition hardware (mostly the combination of ADC and FPGA). 
 The simulation is based on pairs of non-TTL detector pulses which require the Constant Fraction Principle (CFD) for the determination of the exact timing signal.<br><br>
 
-The DLTPulseGenerator library provides optionally a compilation as static or linked library to make it easy accessible to other programming languages: <i>Matlab</i> (for [mex-library](https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html)) or <i>Python</i> (for [ctypes-library](https://docs.python.org/3/library/ctypes.html)). 
+Optionally, DLTPulseGenerator library provides the compilation as <i>static</i> or <i>linked</i> library to make it easy accessible to other programming languages: <i>Matlab</i> (for [mex-library](https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html)) or <i>Python</i> (for [ctypes-library](https://docs.python.org/3/library/ctypes.html)). 
 
 # Example using C++
 
