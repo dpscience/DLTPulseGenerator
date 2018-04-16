@@ -208,12 +208,7 @@ void showLicense() {
 **    this list of conditions and the following disclaimer in the documentation\n\
 **    and / or other materials provided with the distribution.\n\
 **\n\
-** 3. All advertising materials mentioning features or use of this software must display\n\
-**    the following acknowledgement :\n\
-**\n\
-**    - This product includes software developed by Danny Petschke. -\n\
-**\n\
-** 4. Neither the name of the copyright holder \"Danny Petschke\" nor the names of its\n\
+** 3. Neither the name of the copyright holder \"Danny Petschke\" nor the names of its\n\
 **    contributors may be used to endorse or promote products derived from this software\n\
 **    without specific prior written permission.\n\
 **\n\
