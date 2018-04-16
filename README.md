@@ -1,5 +1,5 @@
 # DLTPulseGenerator
-Copyright (c) 2016-2018 Danny Petschke (danny.petschke@uni-wuerzburg.de)<br><br>
+Copyright (c) 2016-2018 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
 <b>DLTPulseGenerator</b> - A Library for the Simulation of Lifetime Spectra based on Detector-Output Pulses
 
 # Introduction
