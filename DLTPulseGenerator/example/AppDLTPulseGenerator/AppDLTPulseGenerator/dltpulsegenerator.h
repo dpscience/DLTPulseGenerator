@@ -45,10 +45,10 @@
 #include <memory>
 #include <cstdint>
 
-#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "17.09.2017"
+#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "04.11.2017"
 
 #define DLTPULSEGENERATOR_MAJOR_VERSION 1
-#define DLTPULSEGENERATOR_MINOR_VERSION 0
+#define DLTPULSEGENERATOR_MINOR_VERSION 1
 
 #if COMPILE_AS_LIBRARY == 1
 #define DLTPULSEGENERATOR_EXPORT				   __declspec(dllexport) 
@@ -60,10 +60,12 @@
 
 /* structures for demonstration purposes  */
 
+#define IGNORE_LT_DISTRIBUTION	{false, DLifeTime::DLTDistributionFunction::Function::GAUSSIAN, 0.0f, 0.0f, 0, 0.0f}
+
 #define DLTSetup_DEMO			{ 0.084932901f, 0.084932901f, 0.0025f, 0.25f, 200.0f, 1024 }
 #define DLTPulse_DEMO			{ 5.0f, 0.165f, 500.0f, 65.0f, true }
 #define DLTPHS_DEMO				{ 190.0f, 90.0f, 150.0f, 25.0f, 190.0f, 90.0f, 150.0f, 25.0f }
-#define DLTSimulationInput_DEMO { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, 0.25f, 0.05f, true }
+#define DLTSimulationInput_DEMO { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, {true, DLifeTime::DLTDistributionFunction::Function::GAUSSIAN, 0.02f, 0.0f, 10000, 0.005f}, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, 0.25f, 0.05f, true }
 
 #define DLTPulseGeneratorDEMO	DLTSimulationInput_DEMO, DLTPHS_DEMO, DLTSetup_DEMO, DLTPulse_DEMO
 
@@ -133,6 +135,24 @@ typedef struct {
 **  The lifetimes are generated to receive the start- and stop-pulses alternately from detector A and B by setting:
 **  isStartStopAlternating = true.
 **/
+struct DLTPULSEGENERATOR_EXPORT DLTDistributionFunction {
+	enum Function {
+		UNKNOWN = -1,
+		GAUSSIAN = 0,
+		LOG_NORMAL = 1,
+		LORENTZIAN_CAUCHY = 2
+	};
+};
+
+typedef struct {
+	bool enabled;
+	DLTDistributionFunction::Function functionType;
+	double param1;			// [ns]
+	double param2;			// [a.u.] -> reserved for future implementations.
+	int gridNumber;			// [#]
+	double gridIncrement;	// [ns]
+} DLTPULSEGENERATOR_EXPORT DLTDistributionInfo;
+
 typedef struct {
     bool lt1_activated;
     bool lt2_activated;
@@ -151,6 +171,12 @@ typedef struct {
     double intensity3;
     double intensity4;
     double intensity5;
+
+	DLTDistributionInfo tau1Distribution;
+	DLTDistributionInfo tau2Distribution;
+	DLTDistributionInfo tau3Distribution;
+	DLTDistributionInfo tau4Distribution;
+	DLTDistributionInfo tau5Distribution;
 
     double intensityOfPromtOccurrance;
     double intensityOfBackgroundOccurrance;
@@ -219,6 +245,7 @@ enum DLTPULSEGENERATOR_EXPORT DLTErrorType : DLTError
 	INVALID_SUM_OF_WEIGTHS				= 0x00001000,
     AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
     AMPLITUDE_AND_PHS_MISFIT			= 0x00004000,
+	INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000
 };
 
 class DLTPULSEGENERATOR_EXPORT DLTCallback
@@ -255,12 +282,14 @@ public:
 					double triggerLevelB_in_milliVolt);
 
 private:
-    double nextLifeTime(bool *bPromt);
+	void initLTGenerator(DLTError *error, DLTCallback *callback = nullptr);
+    double nextLifeTime(bool *bPromt, bool *bValid);
 
 private:
     int m_eventCounter;
 
     class DLTPulseGeneratorPrivate;
+	class DLTDistributionManager;
     std::unique_ptr<DLTPulseGeneratorPrivate> m_privatePtr;
 };
 
@@ -296,7 +325,7 @@ public:
 	DLifeTime::DLTPulse			m_pulseInfo;
 	DLifeTime::DLTSimulationInput m_simulationInput;
 
-	DLifeTime::DLTPulseF		   *m_pulseA, *m_pulseB;
+	DLifeTime::DLTPulseF	   *m_pulseA, *m_pulseB;
 
 	DLifeTime::DLTError			m_lastError;
 };

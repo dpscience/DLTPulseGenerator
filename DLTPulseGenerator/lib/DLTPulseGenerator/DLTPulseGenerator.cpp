@@ -35,6 +35,98 @@
 
 using namespace std;
 
+class DLifeTime::DLTPulseGenerator::DLTDistributionManager {
+	friend class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate;
+	friend class DLifeTime::DLTPulseGenerator;
+
+	bool m_isDiscreteLifetime;
+
+	double m_startLifetime;
+	double m_stopLifetime;
+	double m_lifetimeROI;
+
+	vector<exponential_distribution<double> > m_lifetimeExpDistribution;
+	vector<default_random_engine> m_lifetimeExpDistributionGenerator;
+
+	DLTDistributionManager(double startLifetime = 0.0f, double stopLifetime = 0.0f) :
+		m_isDiscreteLifetime(false),
+		m_startLifetime(startLifetime),
+		m_stopLifetime(stopLifetime),
+		m_lifetimeROI(m_stopLifetime - m_startLifetime) {}
+	~DLTDistributionManager() {
+		clear();
+	}
+
+	void init(double startLifetime, double stopLifetime, bool isDiscreteLifetime) {
+		m_startLifetime = startLifetime;
+		m_stopLifetime = stopLifetime;
+		m_lifetimeROI = m_stopLifetime - m_startLifetime;
+		m_isDiscreteLifetime = isDiscreteLifetime;
+	}
+
+	void add(double tau_in_ns) {
+		exponential_distribution<double> expDistr(1.0f/tau_in_ns);
+		
+		default_random_engine rndEngine;
+		rndEngine.seed(rand());
+
+		m_lifetimeExpDistribution.push_back(expDistr);
+		m_lifetimeExpDistributionGenerator.push_back(rndEngine);
+	}
+
+	void clear() {
+		m_lifetimeExpDistribution.clear();
+		m_lifetimeExpDistributionGenerator.clear();
+	}
+
+	void setAsDiscrete(bool isDiscrete) {
+		m_isDiscreteLifetime = isDiscrete;
+	}
+
+	void setAsDistribution(bool isDistribution) {
+		m_isDiscreteLifetime = !isDistribution;
+	}
+
+	bool isDiscreteLifetime() const {
+		return m_isDiscreteLifetime;
+	}
+
+	bool isDistributedLifetime() const {
+		return !m_isDiscreteLifetime;
+	}
+
+	int getSize() const {
+		return m_lifetimeExpDistribution.size();
+	}
+
+	double mapLifetime(double lifetime, bool *valid) {
+		if (getSize() <= 0) {
+			if (valid)
+				*valid = false;
+
+			return 0.0f;
+		}
+
+		if (valid)
+			*valid = true;
+
+		if (isDiscreteLifetime())
+			return m_lifetimeExpDistribution.at(0)(m_lifetimeExpDistributionGenerator.at(0));
+
+		
+		const int index = (int)(round(((lifetime - m_startLifetime) / m_lifetimeROI)*((double)getSize())));
+
+		if (index >= getSize() || index < 0) {
+			if (valid)
+				*valid = false;
+
+			return 0.0f;
+		}
+
+		return m_lifetimeExpDistribution.at(index)(m_lifetimeExpDistributionGenerator.at(index));
+	}
+};
+
 class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
     friend class DLifeTime::DLTPulseGenerator;
 
@@ -51,19 +143,6 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
     normal_distribution<double> m_distributionStopA;
     normal_distribution<double> m_distributionStopB;
 
-    //DLTSimulationInput:
-    default_random_engine m_generator_lt1;
-    default_random_engine m_generator_lt2;
-    default_random_engine m_generator_lt3;
-    default_random_engine m_generator_lt4;
-    default_random_engine m_generator_lt5;
-
-    exponential_distribution<double> m_distributionLT1;
-    exponential_distribution<double> m_distributionLT2;
-    exponential_distribution<double> m_distributionLT3;
-    exponential_distribution<double> m_distributionLT4;
-    exponential_distribution<double> m_distributionLT5;
-
     //DLTSetup:
     default_random_engine m_generatorUncertaintyPDSDetectorA;
     normal_distribution<double> m_distributionUncertaintyPDSDetectorA;
@@ -77,9 +156,37 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
     default_random_engine m_generatorBackground;
     piecewise_constant_distribution<double>m_distributionBackground;
 
-    //LTSelector:
-    default_random_engine m_generatorLTSelector;
-    piecewise_constant_distribution<double> m_distributionLTSelector;
+	//DLTSimulationInput:
+	void *m_distributionLT1;
+	void *m_distributionLT2;
+	void *m_distributionLT3;
+	void *m_distributionLT4;
+	void *m_distributionLT5;
+
+	default_random_engine m_generator_lt1;
+	default_random_engine m_generator_lt2;
+	default_random_engine m_generator_lt3;
+	default_random_engine m_generator_lt4;
+	default_random_engine m_generator_lt5;
+
+	//lifetime-distribution grid:
+	DLTDistributionManager m_lt1Manager;
+	DLTDistributionManager m_lt2Manager;
+	DLTDistributionManager m_lt3Manager;
+	DLTDistributionManager m_lt4Manager;
+	DLTDistributionManager m_lt5Manager;
+
+	//LTSelector:
+	default_random_engine m_generatorLTSelector;
+	piecewise_constant_distribution<double> m_distributionLTSelector;
+
+	DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate() {
+		m_distributionLT1 = nullptr;
+		m_distributionLT2 = nullptr;
+		m_distributionLT3 = nullptr;
+		m_distributionLT4 = nullptr;
+		m_distributionLT5 = nullptr;
+	}
 };
 
 DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationInput &simulationInput, 
@@ -209,19 +316,9 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
     m_privatePtr.get()->m_distributionStopA  = normal_distribution<double>(m_phsDistribution.meanOfStopA, m_phsDistribution.stddevOfStopA);
     m_privatePtr.get()->m_distributionStopB  = normal_distribution<double>(m_phsDistribution.meanOfStopB, m_phsDistribution.stddevOfStopB);
 
-    //init of DLTSimulationInput related random-generators:
-    m_privatePtr.get()->m_generator_lt1.seed(rand());
-    m_privatePtr.get()->m_generator_lt2.seed(rand());
-    m_privatePtr.get()->m_generator_lt3.seed(rand());
-    m_privatePtr.get()->m_generator_lt4.seed(rand());
-    m_privatePtr.get()->m_generator_lt5.seed(rand());
-
-    m_privatePtr.get()->m_distributionLT1 = exponential_distribution<double>(1.0f/m_simulationInput.tau1);
-    m_privatePtr.get()->m_distributionLT2 = exponential_distribution<double>(1.0f/m_simulationInput.tau2);
-    m_privatePtr.get()->m_distributionLT3 = exponential_distribution<double>(1.0f/m_simulationInput.tau3);
-    m_privatePtr.get()->m_distributionLT4 = exponential_distribution<double>(1.0f/m_simulationInput.tau4);
-    m_privatePtr.get()->m_distributionLT5 = exponential_distribution<double>(1.0f/m_simulationInput.tau5);
-
+	//init of DLTSimulationInput related random-generators:
+	initLTGenerator(&error, callback);
+    
     //init of DLTSetup (PDS and MU) related random-generators:
     m_privatePtr.get()->m_generatorUncertaintyPDSDetectorA.seed(rand());
     m_privatePtr.get()->m_generatorUncertaintyPDSDetectorB.seed(rand());
@@ -294,6 +391,31 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 }
 
 DLifeTime::DLTPulseGenerator::~DLTPulseGenerator() {
+	if (m_privatePtr.get()->m_distributionLT1) {
+		delete m_privatePtr.get()->m_distributionLT1;
+		m_privatePtr.get()->m_distributionLT1 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionLT2) {
+		delete m_privatePtr.get()->m_distributionLT2;
+		m_privatePtr.get()->m_distributionLT2 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionLT3) {
+		delete m_privatePtr.get()->m_distributionLT3;
+		m_privatePtr.get()->m_distributionLT3 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionLT4) {
+		delete m_privatePtr.get()->m_distributionLT4;
+		m_privatePtr.get()->m_distributionLT4 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionLT5) {
+		delete m_privatePtr.get()->m_distributionLT5;
+		m_privatePtr.get()->m_distributionLT5 = nullptr;
+	}
+
     m_privatePtr.release();
 }
 
@@ -314,7 +436,11 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
     const double deeperSampleDepth		 = ((double)m_setupInfo.numberOfCells*deeperSampleDepthFactor);
 
     bool isCoincidence = false;
-    const double nextLT = nextLifeTime(&isCoincidence); //next lifetime? (LTSelector)
+	bool validLifetime = true;
+    const double nextLT = nextLifeTime(&isCoincidence, &validLifetime); //next lifetime? (LTSelector)
+
+	if (!validLifetime)
+		return false;
 
     if ( m_eventCounter%2 ) { //A (Start)-B (Stop) 
         const double amplitudeInMVA = (!isCoincidence)?m_privatePtr.get()->m_distributionStartA(m_privatePtr.get()->m_generatorStartA):m_privatePtr.get()->m_distributionStopA(m_privatePtr.get()->m_generatorStopA);
@@ -483,43 +609,486 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
     return true;
 }
 
-double DLifeTime::DLTPulseGenerator::nextLifeTime(bool *bPromt) {
-    if ( !bPromt)
+void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, DLifeTime::DLTCallback *callback)
+{
+	if (m_simulationInput.lt1_activated) {
+		if (m_simulationInput.tau1Distribution.enabled) {
+			if (m_simulationInput.tau1Distribution.gridIncrement <= 0.0f
+				|| m_simulationInput.tau1Distribution.gridNumber <= 0
+				|| m_simulationInput.tau1Distribution.param1 <= 0.0f) {
+				if (callback && error)
+					*error |= DLifeTime::DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT;
+			}
+		}
+	}
+
+	if (m_simulationInput.lt2_activated) {
+		if (m_simulationInput.tau2Distribution.enabled) {
+			if (m_simulationInput.tau2Distribution.gridIncrement <= 0.0f
+				|| m_simulationInput.tau2Distribution.gridNumber <= 0
+				|| m_simulationInput.tau2Distribution.param1 <= 0.0f) {
+				if (callback && error)
+					*error |= DLifeTime::DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT;
+			}
+		}
+	}
+
+	if (m_simulationInput.lt3_activated) {
+		if (m_simulationInput.tau3Distribution.enabled) {
+			if (m_simulationInput.tau3Distribution.gridIncrement <= 0.0f
+				|| m_simulationInput.tau3Distribution.gridNumber <= 0
+				|| m_simulationInput.tau3Distribution.param1 <= 0.0f) {
+				if (callback && error)
+					*error |= DLifeTime::DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT;
+			}
+		}
+	}
+
+	if (m_simulationInput.lt4_activated) {
+		if (m_simulationInput.tau4Distribution.enabled) {
+			if (m_simulationInput.tau4Distribution.gridIncrement <= 0.0f
+				|| m_simulationInput.tau4Distribution.gridNumber <= 0
+				|| m_simulationInput.tau4Distribution.param1 <= 0.0f) {
+				if (callback && error)
+					*error |= DLifeTime::DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT;
+			}
+		}
+	}
+
+	if (m_simulationInput.lt5_activated) {
+		if (m_simulationInput.tau5Distribution.enabled) {
+			if (m_simulationInput.tau5Distribution.gridIncrement <= 0.0f
+				|| m_simulationInput.tau5Distribution.gridNumber <= 0
+				|| m_simulationInput.tau5Distribution.param1 <= 0.0f) {
+				if (callback && error)
+					*error |= DLifeTime::DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT;
+			}
+		}
+	}
+
+	//lifetime 1:
+	if (m_privatePtr.get()->m_distributionLT1) {
+		delete m_privatePtr.get()->m_distributionLT1;
+		m_privatePtr.get()->m_distributionLT1 = nullptr;
+	}
+
+	m_privatePtr.get()->m_lt1Manager.clear();
+
+	if (m_simulationInput.lt1_activated) { // lifetime activated?
+		m_privatePtr.get()->m_generator_lt1.seed(rand());
+
+		if (m_simulationInput.tau1Distribution.enabled) { //distribution?
+			switch (m_simulationInput.tau1Distribution.functionType)
+			{
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				m_privatePtr.get()->m_distributionLT1 = new normal_distribution<double>(m_simulationInput.tau1, m_simulationInput.tau1Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				m_privatePtr.get()->m_distributionLT1 = new lognormal_distribution<double>(m_simulationInput.tau1, m_simulationInput.tau1Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				m_privatePtr.get()->m_distributionLT1 = new cauchy_distribution<double>(m_simulationInput.tau1, m_simulationInput.tau1Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				m_privatePtr.get()->m_distributionLT1 = new normal_distribution<double>(m_simulationInput.tau1, m_simulationInput.tau1Distribution.param1);
+				break;
+			}
+
+			const double lt_region_in_ns = ((double)(m_simulationInput.tau1Distribution.gridNumber - 1))*m_simulationInput.tau1Distribution.gridIncrement;
+			double start_lt_in_ns = m_simulationInput.tau1 - lt_region_in_ns*0.5f;
+
+			if (start_lt_in_ns <= 0.0f)
+				start_lt_in_ns += fabs(start_lt_in_ns);
+
+			m_privatePtr.get()->m_lt1Manager.init(start_lt_in_ns, start_lt_in_ns + lt_region_in_ns, false);
+
+			for (int i = 0; i < m_simulationInput.tau1Distribution.gridNumber; ++i) {
+				const double lt_in_ns = start_lt_in_ns + ((double)i)*m_simulationInput.tau1Distribution.gridIncrement;
+
+				m_privatePtr.get()->m_lt1Manager.add(lt_in_ns);
+			}
+		}
+		else { //discrete!
+			m_simulationInput.tau1Distribution.functionType = DLifeTime::DLTDistributionFunction::Function::GAUSSIAN;
+
+			m_privatePtr.get()->m_distributionLT1 = new normal_distribution<double>(m_simulationInput.tau1, 0.0f);
+
+			m_privatePtr.get()->m_lt1Manager.init(m_simulationInput.tau1, m_simulationInput.tau1, true);
+			m_privatePtr.get()->m_lt1Manager.add(m_simulationInput.tau1);
+		}
+	}
+
+	//lifetime 2:
+	if (m_privatePtr.get()->m_distributionLT2) {
+		delete m_privatePtr.get()->m_distributionLT2;
+		m_privatePtr.get()->m_distributionLT2 = nullptr;
+	}
+
+	m_privatePtr.get()->m_lt2Manager.clear();
+
+	if (m_simulationInput.lt2_activated) { // lifetime activated?
+		m_privatePtr.get()->m_generator_lt2.seed(rand());
+
+		if (m_simulationInput.tau2Distribution.enabled) { //distribution?
+			switch (m_simulationInput.tau2Distribution.functionType)
+			{
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				m_privatePtr.get()->m_distributionLT2 = new normal_distribution<double>(m_simulationInput.tau2, m_simulationInput.tau2Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				m_privatePtr.get()->m_distributionLT2 = new lognormal_distribution<double>(m_simulationInput.tau2, m_simulationInput.tau2Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				m_privatePtr.get()->m_distributionLT2 = new cauchy_distribution<double>(m_simulationInput.tau2, m_simulationInput.tau2Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				m_privatePtr.get()->m_distributionLT2 = new normal_distribution<double>(m_simulationInput.tau2, m_simulationInput.tau2Distribution.param1);
+				break;
+			}
+
+			const double lt_region_in_ns = ((double)(m_simulationInput.tau2Distribution.gridNumber - 1))*m_simulationInput.tau2Distribution.gridIncrement;
+			double start_lt_in_ns = m_simulationInput.tau2 - lt_region_in_ns*0.5f;
+
+			if (start_lt_in_ns <= 0.0f)
+				start_lt_in_ns += fabs(start_lt_in_ns);
+
+			m_privatePtr.get()->m_lt2Manager.init(start_lt_in_ns, start_lt_in_ns + lt_region_in_ns, false);
+
+			for (int i = 0; i < m_simulationInput.tau2Distribution.gridNumber; ++i) {
+				const double lt_in_ns = start_lt_in_ns + ((double)i)*m_simulationInput.tau2Distribution.gridIncrement;
+
+				m_privatePtr.get()->m_lt2Manager.add(lt_in_ns);
+			}
+		}
+		else { //discrete!
+			m_simulationInput.tau2Distribution.functionType = DLifeTime::DLTDistributionFunction::Function::GAUSSIAN;
+
+			m_privatePtr.get()->m_distributionLT2 = new normal_distribution<double>(m_simulationInput.tau2, 0.0f);
+
+			m_privatePtr.get()->m_lt2Manager.init(m_simulationInput.tau2, m_simulationInput.tau2, true);
+			m_privatePtr.get()->m_lt2Manager.add(m_simulationInput.tau2);
+		}
+	}
+
+
+	//lifetime 3:
+	if (m_privatePtr.get()->m_distributionLT3) {
+		delete m_privatePtr.get()->m_distributionLT3;
+		m_privatePtr.get()->m_distributionLT3 = nullptr;
+	}
+
+	m_privatePtr.get()->m_lt3Manager.clear();
+
+	if (m_simulationInput.lt3_activated) { // lifetime activated?
+		m_privatePtr.get()->m_generator_lt3.seed(rand());
+
+		if (m_simulationInput.tau3Distribution.enabled) { //distribution?
+			switch (m_simulationInput.tau3Distribution.functionType)
+			{
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				m_privatePtr.get()->m_distributionLT3 = new normal_distribution<double>(m_simulationInput.tau3, m_simulationInput.tau3Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				m_privatePtr.get()->m_distributionLT3 = new lognormal_distribution<double>(m_simulationInput.tau3, m_simulationInput.tau3Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				m_privatePtr.get()->m_distributionLT3 = new cauchy_distribution<double>(m_simulationInput.tau3, m_simulationInput.tau3Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				m_privatePtr.get()->m_distributionLT3 = new normal_distribution<double>(m_simulationInput.tau3, m_simulationInput.tau3Distribution.param1);
+				break;
+			}
+
+			const double lt_region_in_ns = ((double)(m_simulationInput.tau3Distribution.gridNumber - 1))*m_simulationInput.tau3Distribution.gridIncrement;
+			double start_lt_in_ns = m_simulationInput.tau3 - lt_region_in_ns*0.5f;
+
+			if (start_lt_in_ns <= 0.0f)
+				start_lt_in_ns += fabs(start_lt_in_ns);
+
+			m_privatePtr.get()->m_lt3Manager.init(start_lt_in_ns, start_lt_in_ns + lt_region_in_ns, false);
+
+			for (int i = 0; i < m_simulationInput.tau3Distribution.gridNumber; ++i) {
+				const double lt_in_ns = start_lt_in_ns + ((double)i)*m_simulationInput.tau3Distribution.gridIncrement;
+
+				m_privatePtr.get()->m_lt3Manager.add(lt_in_ns);
+			}
+		}
+		else { //discrete!
+			m_simulationInput.tau3Distribution.functionType = DLifeTime::DLTDistributionFunction::Function::GAUSSIAN;
+
+			m_privatePtr.get()->m_distributionLT3 = new normal_distribution<double>(m_simulationInput.tau3, 0.0f);
+
+			m_privatePtr.get()->m_lt3Manager.init(m_simulationInput.tau3, m_simulationInput.tau3, true);
+			m_privatePtr.get()->m_lt3Manager.add(m_simulationInput.tau3);
+		}
+	}
+
+
+	//lifetime 4:
+	if (m_privatePtr.get()->m_distributionLT4) {
+		delete m_privatePtr.get()->m_distributionLT4;
+		m_privatePtr.get()->m_distributionLT4 = nullptr;
+	}
+
+	m_privatePtr.get()->m_lt4Manager.clear();
+
+	if (m_simulationInput.lt4_activated) { // lifetime activated?
+		m_privatePtr.get()->m_generator_lt4.seed(rand());
+
+		if (m_simulationInput.tau4Distribution.enabled) { //distribution?
+			switch (m_simulationInput.tau4Distribution.functionType)
+			{
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				m_privatePtr.get()->m_distributionLT4 = new normal_distribution<double>(m_simulationInput.tau4, m_simulationInput.tau4Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				m_privatePtr.get()->m_distributionLT4 = new lognormal_distribution<double>(m_simulationInput.tau4, m_simulationInput.tau4Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				m_privatePtr.get()->m_distributionLT4 = new cauchy_distribution<double>(m_simulationInput.tau4, m_simulationInput.tau4Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				m_privatePtr.get()->m_distributionLT4 = new normal_distribution<double>(m_simulationInput.tau4, m_simulationInput.tau4Distribution.param1);
+				break;
+			}
+
+			const double lt_region_in_ns = ((double)(m_simulationInput.tau4Distribution.gridNumber - 1))*m_simulationInput.tau4Distribution.gridIncrement;
+			double start_lt_in_ns = m_simulationInput.tau4 - lt_region_in_ns*0.5f;
+
+			if (start_lt_in_ns <= 0.0f)
+				start_lt_in_ns += fabs(start_lt_in_ns);
+
+			m_privatePtr.get()->m_lt4Manager.init(start_lt_in_ns, start_lt_in_ns + lt_region_in_ns, false);
+
+			for (int i = 0; i < m_simulationInput.tau4Distribution.gridNumber; ++i) {
+				const double lt_in_ns = start_lt_in_ns + ((double)i)*m_simulationInput.tau4Distribution.gridIncrement;
+
+				m_privatePtr.get()->m_lt4Manager.add(lt_in_ns);
+			}
+		}
+		else { //discrete!
+			m_simulationInput.tau4Distribution.functionType = DLifeTime::DLTDistributionFunction::Function::GAUSSIAN;
+
+			m_privatePtr.get()->m_distributionLT4 = new normal_distribution<double>(m_simulationInput.tau4, 0.0f);
+
+			m_privatePtr.get()->m_lt4Manager.init(m_simulationInput.tau4, m_simulationInput.tau4, true);
+			m_privatePtr.get()->m_lt4Manager.add(m_simulationInput.tau4);
+		}
+	}
+
+
+	//lifetime 5:
+	if (m_privatePtr.get()->m_distributionLT5) {
+		delete m_privatePtr.get()->m_distributionLT5;
+		m_privatePtr.get()->m_distributionLT5 = nullptr;
+	}
+
+	m_privatePtr.get()->m_lt5Manager.clear();
+
+	if (m_simulationInput.lt5_activated) { // lifetime activated?
+		m_privatePtr.get()->m_generator_lt5.seed(rand());
+
+		if (m_simulationInput.tau5Distribution.enabled) { //distribution?
+			switch (m_simulationInput.tau5Distribution.functionType)
+			{
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				m_privatePtr.get()->m_distributionLT5 = new normal_distribution<double>(m_simulationInput.tau5, m_simulationInput.tau5Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				m_privatePtr.get()->m_distributionLT5 = new lognormal_distribution<double>(m_simulationInput.tau5, m_simulationInput.tau5Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				m_privatePtr.get()->m_distributionLT5 = new cauchy_distribution<double>(m_simulationInput.tau5, m_simulationInput.tau5Distribution.param1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				m_privatePtr.get()->m_distributionLT5 = new normal_distribution<double>(m_simulationInput.tau5, m_simulationInput.tau5Distribution.param1);
+				break;
+			}
+
+			const double lt_region_in_ns = ((double)(m_simulationInput.tau5Distribution.gridNumber - 1))*m_simulationInput.tau5Distribution.gridIncrement;
+			double start_lt_in_ns = m_simulationInput.tau5 - lt_region_in_ns*0.5f;
+
+			if (start_lt_in_ns <= 0.0f)
+				start_lt_in_ns += fabs(start_lt_in_ns);
+
+			m_privatePtr.get()->m_lt5Manager.init(start_lt_in_ns, start_lt_in_ns + lt_region_in_ns, false);
+
+			for (int i = 0; i < m_simulationInput.tau5Distribution.gridNumber; ++i) {
+				const double lt_in_ns = start_lt_in_ns + ((double)i)*m_simulationInput.tau5Distribution.gridIncrement;
+
+				m_privatePtr.get()->m_lt5Manager.add(lt_in_ns);
+			}
+		}
+		else { //discrete!
+			m_simulationInput.tau5Distribution.functionType = DLifeTime::DLTDistributionFunction::Function::GAUSSIAN;
+
+			m_privatePtr.get()->m_distributionLT5 = new normal_distribution<double>(m_simulationInput.tau5, 0.0f);
+
+			m_privatePtr.get()->m_lt5Manager.init(m_simulationInput.tau5, m_simulationInput.tau5, true);
+			m_privatePtr.get()->m_lt5Manager.add(m_simulationInput.tau5);
+		}
+	}
+}
+
+double DLifeTime::DLTPulseGenerator::nextLifeTime(bool *bPromt, bool *bValid) {
+    if ( !bPromt || !bValid )
         return 0.0f;
 
 
     *bPromt = false;
+	*bValid = true;
 
     const int selector = m_privatePtr.get()->m_distributionLTSelector(m_privatePtr.get()->m_generatorLTSelector);
 
+	double lt = 0.0f;
+
     switch ( selector ) {
-    case 0:
-        return m_privatePtr.get()->m_distributionLT1(m_privatePtr.get()->m_generator_lt1);
+	case 0: { //lifetime 1:
+		switch (m_simulationInput.tau1Distribution.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			lt = m_privatePtr.get()->m_lt1Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT1)(m_privatePtr.get()->m_generator_lt1), bValid);
+			break;
 
-    case 1:
-        return m_privatePtr.get()->m_distributionLT2(m_privatePtr.get()->m_generator_lt2);
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			lt = m_privatePtr.get()->m_lt1Manager.mapLifetime((*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionLT1)(m_privatePtr.get()->m_generator_lt1), bValid);
+			break;
 
-    case 2:
-        return m_privatePtr.get()->m_distributionLT3(m_privatePtr.get()->m_generator_lt3);
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			lt = m_privatePtr.get()->m_lt1Manager.mapLifetime((*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionLT1)(m_privatePtr.get()->m_generator_lt1), bValid);
+			break;
 
-    case 3:
-        return m_privatePtr.get()->m_distributionLT4(m_privatePtr.get()->m_generator_lt4);
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			lt = m_privatePtr.get()->m_lt1Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT1)(m_privatePtr.get()->m_generator_lt1), bValid);
+			break;
+		}
+	}
+		break;
 
-    case 4:
-        return m_privatePtr.get()->m_distributionLT5(m_privatePtr.get()->m_generator_lt5);
+	case 1: { //lifetime 2:
+		switch (m_simulationInput.tau2Distribution.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			lt = m_privatePtr.get()->m_lt2Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT2)(m_privatePtr.get()->m_generator_lt2), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			lt = m_privatePtr.get()->m_lt2Manager.mapLifetime((*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionLT2)(m_privatePtr.get()->m_generator_lt2), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			lt = m_privatePtr.get()->m_lt2Manager.mapLifetime((*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionLT2)(m_privatePtr.get()->m_generator_lt2), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			lt = m_privatePtr.get()->m_lt2Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT2)(m_privatePtr.get()->m_generator_lt2), bValid);
+			break;
+		}
+	}
+		break;
+
+	case 2: { //lifetime 3:
+		switch (m_simulationInput.tau3Distribution.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			lt = m_privatePtr.get()->m_lt3Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT3)(m_privatePtr.get()->m_generator_lt3), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			lt = m_privatePtr.get()->m_lt3Manager.mapLifetime((*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionLT3)(m_privatePtr.get()->m_generator_lt3), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			lt = m_privatePtr.get()->m_lt3Manager.mapLifetime((*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionLT3)(m_privatePtr.get()->m_generator_lt3), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			lt = m_privatePtr.get()->m_lt3Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT3)(m_privatePtr.get()->m_generator_lt3), bValid);
+			break;
+		}
+	}
+		break;
+
+	case 3: { //lifetime 4:
+		switch (m_simulationInput.tau4Distribution.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			lt = m_privatePtr.get()->m_lt4Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT4)(m_privatePtr.get()->m_generator_lt4), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			lt = m_privatePtr.get()->m_lt4Manager.mapLifetime((*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionLT4)(m_privatePtr.get()->m_generator_lt4), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			lt = m_privatePtr.get()->m_lt4Manager.mapLifetime((*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionLT4)(m_privatePtr.get()->m_generator_lt4), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			lt = m_privatePtr.get()->m_lt4Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT4)(m_privatePtr.get()->m_generator_lt4), bValid);
+			break;
+		}
+	}
+		break;
+
+	case 4: { //lifetime 5:
+		switch (m_simulationInput.tau5Distribution.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			lt = m_privatePtr.get()->m_lt5Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT5)(m_privatePtr.get()->m_generator_lt5), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			lt = m_privatePtr.get()->m_lt5Manager.mapLifetime((*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionLT5)(m_privatePtr.get()->m_generator_lt5), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			lt = m_privatePtr.get()->m_lt5Manager.mapLifetime((*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionLT5)(m_privatePtr.get()->m_generator_lt5), bValid);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			lt = m_privatePtr.get()->m_lt5Manager.mapLifetime((*(normal_distribution<double>*)m_privatePtr.get()->m_distributionLT5)(m_privatePtr.get()->m_generator_lt5), bValid);
+			break;
+		}
+	}
+		break;
 
     case 5: //background
-        return m_privatePtr.get()->m_distributionBackground(m_privatePtr.get()->m_generatorBackground);
+        lt = m_privatePtr.get()->m_distributionBackground(m_privatePtr.get()->m_generatorBackground);
+		break;
 
     case 6: //promt
+	default:
         *bPromt = true;
-        return 0.0f;
-
-    default:
-        return 0.0f;
+		break;
     }
 
-    return 0.0f;
+    return lt;
 }
 
 DLifeTime::DLTPointF::DLTPointF() : 

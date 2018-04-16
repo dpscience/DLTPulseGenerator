@@ -1,30 +1,30 @@
 /*******************************************************************************************
 **
 ** Copyright (c) 2017 Danny Petschke. All rights reserved.
-**
-** Redistribution and use in source and binary forms, with or without modification,
+** 
+** Redistribution and use in source and binary forms, with or without modification, 
 ** are permitted provided that the following conditions are met:
 **
-** 1. Redistributions of source code must retain the above copyright notice,
+** 1. Redistributions of source code must retain the above copyright notice, 
 **	  this list of conditions and the following disclaimer.
 **
-** 2. Redistributions in binary form must reproduce the above copyright notice,
-**    this list of conditions and the following disclaimer in the documentation
+** 2. Redistributions in binary form must reproduce the above copyright notice, 
+**    this list of conditions and the following disclaimer in the documentation 
 **    and/or other materials provided with the distribution.
 **
-** 3. Neither the name of the copyright holder "Danny Petschke" nor the names of its
-**    contributors may be used to endorse or promote products derived from this software
+** 3. Neither the name of the copyright holder "Danny Petschke" nor the names of its  
+**    contributors may be used to endorse or promote products derived from this software  
 **    without specific prior written permission.
 **
 **
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
-** OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-** MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-** COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-** EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-** HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
-** TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS 
+** OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+** MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+** COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+** EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+** SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+** HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
+** TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 ** EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **
 ** Contact: danny.petschke@uni-wuerzburg.de
@@ -128,7 +128,7 @@ int main() {
 		time(&stop); //getting timestamp for logging
 		const double avg = (double)counter/difftime(stop, start);
 
-		printf("%s - Average Number of generated Pulse/s: %f\n", asctime(localtime(&stop)), avg);
+		printf("%s - Average Number of generated Pulses/s: %f\n", asctime(localtime(&stop)), avg);
 	}
 
     return 0;
@@ -166,29 +166,173 @@ void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, cons
 	if (simulationInput.lt1_activated) {
 		printf("tau 1:				%f [ns]\n", simulationInput.tau1);
 		printf("I 1:				%f\n", simulationInput.intensity1);
+		printf("Discrete Lifetime 1?:		%i\n", !simulationInput.tau1Distribution.enabled);
+
+		if (simulationInput.tau1Distribution.enabled) {
+			const char* name = {};
+			switch (simulationInput.tau1Distribution.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				name = { "Gaussian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				name = { "Log-Normal" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				name = { "Cauchy/Lorentzian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				name = { "Gaussian" };
+				break;
+			}
+
+			printf("Function-Type:			%s\n", name);
+			printf("Uncertainty:			%f [ns]\n", simulationInput.tau1Distribution.param1);
+			printf("Grid-Count:			%i\n", simulationInput.tau1Distribution.gridNumber);
+			printf("Grid-Increment:			%f [ns]\n", simulationInput.tau1Distribution.gridIncrement);
+		}
 	}
 
 	if (simulationInput.lt2_activated) {
 		printf("tau 2:				%f [ns]\n", simulationInput.tau2);
 		printf("I 2:				%f\n", simulationInput.intensity2);
+
+		printf("Discrete Lifetime 2?:		%i\n", !simulationInput.tau2Distribution.enabled);
+
+		if (simulationInput.tau2Distribution.enabled) {
+			const char* name = {};
+			switch (simulationInput.tau2Distribution.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				name = { "Gaussian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				name = { "Log-Normal" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				name = { "Cauchy/Lorentzian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				name = { "Gaussian" };
+				break;
+			}
+
+			printf("Function-Type:			%s\n", name);
+			printf("Uncertainty:			%f [ns]\n", simulationInput.tau2Distribution.param1);
+			printf("Grid-Count:			%i\n", simulationInput.tau2Distribution.gridNumber);
+			printf("Grid-Increment:			%f [ns]\n", simulationInput.tau2Distribution.gridIncrement);
+		}
 	}
 
 	if (simulationInput.lt3_activated) {
 		printf("tau 3:				%f [ns]\n", simulationInput.tau3);
 		printf("I 3:				%f\n", simulationInput.intensity3);
+
+		printf("Discrete Lifetime 3?:		%i\n", !simulationInput.tau3Distribution.enabled);
+
+		if (simulationInput.tau3Distribution.enabled) {
+			const char* name = {};
+			switch (simulationInput.tau3Distribution.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				name = { "Gaussian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				name = { "Log-Normal" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				name = { "Cauchy/Lorentzian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				name = { "Gaussian" };
+				break;
+			}
+
+			printf("Function-Type:			%s\n", name);
+			printf("Uncertainty:			%f [ns]\n", simulationInput.tau3Distribution.param1);
+			printf("Grid-Count:			%i\n", simulationInput.tau3Distribution.gridNumber);
+			printf("Grid-Increment:			%f [ns]\n", simulationInput.tau3Distribution.gridIncrement);
+		}
 	}
 
 	if (simulationInput.lt4_activated) {
 		printf("tau 4:				%f [ns]\n", simulationInput.tau4);
 		printf("I 4:				%f\n", simulationInput.intensity4);
+
+		printf("Discrete Lifetime 4?:		%i\n", !simulationInput.tau4Distribution.enabled);
+
+		if (simulationInput.tau4Distribution.enabled) {
+			const char* name = {};
+			switch (simulationInput.tau4Distribution.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				name = { "Gaussian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				name = { "Log-Normal" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				name = { "Cauchy/Lorentzian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				name = { "Gaussian" };
+				break;
+			}
+
+			printf("Function-Type:			%s\n", name);
+			printf("Uncertainty:			%f [ns]\n", simulationInput.tau4Distribution.param1);
+			printf("Grid-Count:			%i\n", simulationInput.tau4Distribution.gridNumber);
+			printf("Grid-Increment:			%f [ns]\n", simulationInput.tau4Distribution.gridIncrement);
+		}
 	}
 
 	if (simulationInput.lt5_activated) {
 		printf("tau 5:				%f [ns]\n", simulationInput.tau5);
 		printf("I 5:				%f\n", simulationInput.intensity5);
+
+		printf("Discrete Lifetime 5?:		%i\n", !simulationInput.tau5Distribution.enabled);
+
+		if (simulationInput.tau5Distribution.enabled) {
+			const char* name = {};
+			switch (simulationInput.tau5Distribution.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				name = { "Gaussian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				name = { "Log-Normal" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				name = { "Cauchy/Lorentzian" };
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				name = { "Gaussian" };
+				break;
+			}
+
+			printf("Function-Type:			%s\n", name);
+			printf("Uncertainty:			%f [ns]\n", simulationInput.tau5Distribution.param1);
+			printf("Grid-Count:			%i\n", simulationInput.tau5Distribution.gridNumber);
+			printf("Grid-Increment:			%f [ns]\n", simulationInput.tau5Distribution.gridIncrement);
+		}
 	}
 
-	printf("Promt:      			%f [ns]\n", simulationInput.intensityOfPromtOccurrance);
+	printf("Prompt:      			%f [ns]\n", simulationInput.intensityOfPromtOccurrance);
 	printf("Background:			%f [ns]\n", simulationInput.intensityOfBackgroundOccurrance);
 	printf("Alternating A-B:		%i\n", simulationInput.isStartStopAlternating);
 }
@@ -208,12 +352,7 @@ void showLicense() {
 **    this list of conditions and the following disclaimer in the documentation\n\
 **    and / or other materials provided with the distribution.\n\
 **\n\
-** 3. All advertising materials mentioning features or use of this software must display\n\
-**    the following acknowledgement :\n\
-**\n\
-**    - This product includes software developed by Danny Petschke. -\n\
-**\n\
-** 4. Neither the name of the copyright holder \"Danny Petschke\" nor the names of its\n\
+** 3. Neither the name of the copyright holder \"Danny Petschke\" nor the names of its\n\
 **    contributors may be used to endorse or promote products derived from this software\n\
 **    without specific prior written permission.\n\
 **\n\
