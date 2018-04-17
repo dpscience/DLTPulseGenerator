@@ -56,7 +56,7 @@ Errors can be handled by inheriting from <i>class DLTPulseGenerator</i> and usin
 A <b>library wrapper</b> in <i>Python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) which demonstrates the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) by calling the functions from <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)) is provided.<br>
 [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls functions from the library wrapper [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py) and displayes the generated pulse pairs. Additionally, the Pulse Height Spectra (PHS) are determined and displayed.<br>
 
-#### requirements
+#### requirements:
 - [ctypes](https://docs.python.org/3/library/ctypes.html) 
 - [NumPy](http://www.numpy.org/) 
 - [matplotlib](https://matplotlib.org/)<br>
