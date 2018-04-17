@@ -87,6 +87,3 @@ are permitted provided that the following conditions are met:<br><br>
  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<br>
  
  see also [BSD-3-Clause License](https://opensource.org/licenses/BSD-3-Clause)
-
-
-
