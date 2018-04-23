@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017 Danny Petschke. All rights reserved.
+** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 ** 
 ** Redistribution and use in source and binary forms, with or without modification, 
 ** are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@
 ***********************************************************************************************/
 
 /* For the compilation as static or linked library set COMPILE_AS_LIBRARY = 1 */
-#define COMPILE_AS_LIBRARY					   1
+#define COMPILE_AS_LIBRARY					   0
 
 #ifndef DLTPULSEGENERATOR_H
 #define DLTPULSEGENERATOR_H
@@ -45,10 +45,10 @@
 #include <memory>
 #include <cstdint>
 
-#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "17.09.2017"
+#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "04.11.2017"
 
 #define DLTPULSEGENERATOR_MAJOR_VERSION 1
-#define DLTPULSEGENERATOR_MINOR_VERSION 0
+#define DLTPULSEGENERATOR_MINOR_VERSION 1
 
 #if COMPILE_AS_LIBRARY == 1
 #define DLTPULSEGENERATOR_EXPORT				   __declspec(dllexport) 
@@ -60,10 +60,12 @@
 
 /* structures for demonstration purposes  */
 
+#define IGNORE_LT_DISTRIBUTION	{false, DLifeTime::DLTDistributionFunction::Function::GAUSSIAN, 0.0f, 0.0f, 0, 0.0f}
+
 #define DLTSetup_DEMO			{ 0.084932901f, 0.084932901f, 0.0025f, 0.25f, 200.0f, 1024 }
 #define DLTPulse_DEMO			{ 5.0f, 0.165f, 500.0f, 65.0f, true }
 #define DLTPHS_DEMO				{ 190.0f, 90.0f, 150.0f, 25.0f, 190.0f, 90.0f, 150.0f, 25.0f }
-#define DLTSimulationInput_DEMO { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, 0.25f, 0.05f, true }
+#define DLTSimulationInput_DEMO { true, true, true, false, false, 0.160f, 0.420f, 3.2f, 0.0f, 0.0f, 0.25f, 0.25f, 0.5f, 0.0f, 0.0f, {true, DLifeTime::DLTDistributionFunction::Function::GAUSSIAN, 0.02f, 0.0f, 10000, 0.005f}, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, IGNORE_LT_DISTRIBUTION, 0.25f, 0.05f, true }
 
 #define DLTPulseGeneratorDEMO	DLTSimulationInput_DEMO, DLTPHS_DEMO, DLTSetup_DEMO, DLTPulse_DEMO
 
@@ -133,6 +135,24 @@ typedef struct {
 **  The lifetimes are generated to receive the start- and stop-pulses alternately from detector A and B by setting:
 **  isStartStopAlternating = true.
 **/
+struct DLTPULSEGENERATOR_EXPORT DLTDistributionFunction {
+	enum Function : int {
+		UNKNOWN = -1,
+		GAUSSIAN = 0,
+		LOG_NORMAL = 1,
+		LORENTZIAN_CAUCHY = 2
+	};
+};
+
+typedef struct {
+	bool enabled;
+	DLTDistributionFunction::Function functionType;
+	double param1;			// [ns]
+	double param2;			// [a.u.] -> reserved for future implementations.
+	int gridNumber;			// [#]
+	double gridIncrement;	// [ns]
+} DLTPULSEGENERATOR_EXPORT DLTDistributionInfo;
+
 typedef struct {
     bool lt1_activated;
     bool lt2_activated;
@@ -151,6 +171,12 @@ typedef struct {
     double intensity3;
     double intensity4;
     double intensity5;
+
+	DLTDistributionInfo tau1Distribution;
+	DLTDistributionInfo tau2Distribution;
+	DLTDistributionInfo tau3Distribution;
+	DLTDistributionInfo tau4Distribution;
+	DLTDistributionInfo tau5Distribution;
 
     double intensityOfPromtOccurrance;
     double intensityOfBackgroundOccurrance;
@@ -219,6 +245,7 @@ enum DLTPULSEGENERATOR_EXPORT DLTErrorType : DLTError
 	INVALID_SUM_OF_WEIGTHS				= 0x00001000,
     AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
     AMPLITUDE_AND_PHS_MISFIT			= 0x00004000,
+	INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000
 };
 
 class DLTPULSEGENERATOR_EXPORT DLTCallback
@@ -255,12 +282,14 @@ public:
 					double triggerLevelB_in_milliVolt);
 
 private:
-    double nextLifeTime(bool *bPromt);
+	void initLTGenerator(DLTError *error, DLTCallback *callback = nullptr);
+    double nextLifeTime(bool *bPromt, bool *bValid);
 
 private:
     int m_eventCounter;
 
     class DLTPulseGeneratorPrivate;
+	class DLTDistributionManager;
     std::unique_ptr<DLTPulseGeneratorPrivate> m_privatePtr;
 };
 
@@ -296,7 +325,7 @@ public:
 	DLifeTime::DLTPulse			m_pulseInfo;
 	DLifeTime::DLTSimulationInput m_simulationInput;
 
-	DLifeTime::DLTPulseF		   *m_pulseA, *m_pulseB;
+	DLifeTime::DLTPulseF	   *m_pulseA, *m_pulseB;
 
 	DLifeTime::DLTError			m_lastError;
 };
@@ -337,11 +366,11 @@ DLTPULSEGENERATOR_EXPORT_C extern void setStopOfA(double meanOfStop_A_in_milliVo
 DLTPULSEGENERATOR_EXPORT_C extern void setStopOfB(double meanOfStop_B_in_milliVolt, double sigmaOfStop_B_in_milliVolt);
 
 //equivalent to DLTSimulationInput:
-DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_1(bool lt1_activated, double tau1_in_nanoSeconds, double intensity1);
-DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_2(bool lt2_activated, double tau2_in_nanoSeconds, double intensity2);
-DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_3(bool lt3_activated, double tau3_in_nanoSeconds, double intensity3);
-DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_4(bool lt4_activated, double tau4_in_nanoSeconds, double intensity4);
-DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_5(bool lt5_activated, double tau5_in_nanoSeconds, double intensity5);
+DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_1(bool lt1_activated, double tau1_in_nanoSeconds, double intensity1, bool lt1_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement);
+DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_2(bool lt2_activated, double tau2_in_nanoSeconds, double intensity2, bool lt2_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement);
+DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_3(bool lt3_activated, double tau3_in_nanoSeconds, double intensity3, bool lt3_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement);
+DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_4(bool lt4_activated, double tau4_in_nanoSeconds, double intensity4, bool lt4_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement);
+DLTPULSEGENERATOR_EXPORT_C extern void setLifeTime_5(bool lt5_activated, double tau5_in_nanoSeconds, double intensity5, bool lt5_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement);
 
 DLTPULSEGENERATOR_EXPORT_C extern void setStartStopAlternating(bool alternating);
 

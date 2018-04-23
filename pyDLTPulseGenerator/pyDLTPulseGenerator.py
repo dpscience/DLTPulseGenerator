@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -35,18 +35,18 @@ import ctypes
 from ctypes import cdll
 
 def __information__():
-    print("#****************** pyDLTPulseGenerator 1.0 (20.10.2017) *******************")
+    print("#****************** pyDLTPulseGenerator 1.1 (04.11.2017) *******************")
     print("#**")
-    print("#** Copyright (C) 2017 Danny Petschke")
+    print("#** Copyright (C) 2017, 2018 Danny Petschke")
     print("#**")
-    print("#** Contact: danny.petschke@uni-wuerzburg.de/danny.petschke@dscientec.com")
+    print("#** Contact: danny.petschke@uni-wuerzburg.de")
     print("#**")
     print("#***************************************************************************\n")
 
 def __licence__():
     print("#*************************************************************************************************")
     print("#**")
-    print("#** Copyright (c) 2017 Danny Petschke. All rights reserved.")
+    print("#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.")
     print("#**")
     print("#** Redistribution and use in source and binary forms, with or without modification,") 
     print("#** are permitted provided that the following conditions are met:")
@@ -183,6 +183,27 @@ class DLTPHS:
         self.m_stddevOfStart_B_in_milliVolt = stddevOfStartB
         self.m_stddevOfStop_B_in_milliVolt = stddevOfStopB
 
+class DLTDistributionInfo:
+    m_enabled = False
+
+    #GAUSSIAN           = 0
+    #LOG_NORMAL         = 1
+    #LORENTZIAN_CAUCHY  = 2
+    
+    m_functionType = 1
+    m_param1 = 0.0
+    m_param2 = 0.0 #reserved for future implementations
+    m_gridCount = 0
+    m_gridIncrement = 0.0
+
+    def __init__(self, enabled = False, functionType = 1, param1 = 0.0, gridCount = 0, gridIncrement = 0.0):
+        self.m_enabled = enabled
+        self.m_functionType = functionType
+        self.m_param1 = param1
+        self.m_param2 = 0.0
+        self.m_gridCount = gridCount
+        self.m_gridIncrement = gridIncrement
+        
 class DLTSimulationInput:
     m_lt1_activated = True
     m_lt2_activated = True
@@ -196,6 +217,12 @@ class DLTSimulationInput:
     m_tau4_in_nanoSeconds = 0.0
     m_tau5_in_nanoSeconds = 0.0
 
+    m_distrInfo1 = DLTDistributionInfo()
+    m_distrInfo2 = DLTDistributionInfo()
+    m_distrInfo3 = DLTDistributionInfo()
+    m_distrInfo4 = DLTDistributionInfo()
+    m_distrInfo5 = DLTDistributionInfo()
+
     m_intensity1 = 0.25
     m_intensity2 = 0.25
     m_intensity3 = 0.5
@@ -207,11 +234,11 @@ class DLTSimulationInput:
 
     m_isStartStopAlternating = True;
 
-    def __init__(self, lt1_activated = True, tau1_in_nanoSeconds = 0.160, intensity1 = 0.25,
-               lt2_activated = True, tau2_in_nanoSeconds = 0.420, intensity2 = 0.25,
-               lt3_activated = True, tau3_in_nanoSeconds = 3.2, intensity3 = 0.5,
-               lt4_activated = False, tau4_in_nanoSeconds = 0.0, intensity4 = 0.0,
-               lt5_activated = False, tau5_in_nanoSeconds = 0.0, intensity5 = 0.0,
+    def __init__(self, lt1_activated = True, tau1_in_nanoSeconds = 0.160, intensity1 = 0.25, distrInfo1 = DLTDistributionInfo(),
+               lt2_activated = True, tau2_in_nanoSeconds = 0.420, intensity2 = 0.25, distrInfo2 = DLTDistributionInfo(),
+               lt3_activated = True, tau3_in_nanoSeconds = 3.2, intensity3 = 0.5, distrInfo3 = DLTDistributionInfo(),
+               lt4_activated = False, tau4_in_nanoSeconds = 0.0, intensity4 = 0.0, distrInfo4 = DLTDistributionInfo(),
+               lt5_activated = False, tau5_in_nanoSeconds = 0.0, intensity5 = 0.0, distrInfo5 = DLTDistributionInfo(),
                intensityOfPromtOccurrance = 0.2,
                intensityOfBackgroundOccurrance = 0.05,
                isStartStopAlternating = True):
@@ -232,6 +259,12 @@ class DLTSimulationInput:
         self.m_intensity3 = intensity3
         self.m_intensity4 = intensity4
         self.m_intensity5 = intensity5
+
+        self.m_distrInfo1 = distrInfo1
+        self.m_distrInfo2 = distrInfo2
+        self.m_distrInfo3 = distrInfo3
+        self.m_distrInfo4 = distrInfo4
+        self.m_distrInfo5 = distrInfo5
 
         self.m_intensityOfPromtOccurrance = intensityOfPromtOccurrance
         self.m_intensityOfBackgroundOccurrance = intensityOfBackgroundOccurrance
@@ -309,19 +342,44 @@ class DLTPulseGenerator:
         #DLTSimulationInput:
         self.__dllPtr.setLifeTime_1(ctypes.c_bool(dLTSimulationInput.m_lt1_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau1_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity1))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity1),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo1.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo1.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo1.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo1.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo1.m_gridIncrement))
         self.__dllPtr.setLifeTime_2(ctypes.c_bool(dLTSimulationInput.m_lt2_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau2_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity2))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity2),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo2.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo2.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo2.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo2.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo2.m_gridIncrement))
         self.__dllPtr.setLifeTime_3(ctypes.c_bool(dLTSimulationInput.m_lt3_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau3_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity3))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity3),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo3.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo3.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo3.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo3.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo3.m_gridIncrement))
         self.__dllPtr.setLifeTime_4(ctypes.c_bool(dLTSimulationInput.m_lt4_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau4_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity4))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity4),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo4.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo4.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo4.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo4.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo4.m_gridIncrement))
         self.__dllPtr.setLifeTime_5(ctypes.c_bool(dLTSimulationInput.m_lt5_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau5_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity5))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity5),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo5.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo5.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo5.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo5.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo5.m_gridIncrement))
         self.__dllPtr.setStartStopAlternating(ctypes.c_bool(dLTSimulationInput.m_isStartStopAlternating))
 
         #DLTPHS:
