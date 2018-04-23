@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017 Danny Petschke. All rights reserved.
+** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without modification,
 ** are permitted provided that the following conditions are met:
@@ -361,7 +361,7 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 		cnt++;
     }
 
-    m_privatePtr.get()->m_generatorBackground.seed();
+    m_privatePtr.get()->m_generatorBackground.seed(rand());
     m_privatePtr.get()->m_distributionBackground = piecewise_constant_distribution<double>(intervalsBG.begin(), intervalsBG.end(), weightsBG.begin());
 
     const double iLT1 = m_simulationInput.lt1_activated?m_simulationInput.intensity1*100.0f:0.0f; // [%]
@@ -370,8 +370,8 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
     const double iLT4 = m_simulationInput.lt4_activated?m_simulationInput.intensity4*100.0f:0.0f; // [%]
     const double iLT5 = m_simulationInput.lt5_activated?m_simulationInput.intensity5*100.0f:0.0f; // [%]
 
-    const double wBG  = m_simulationInput.intensityOfBackgroundOccurrance*100.0f; // [%]
-    const double wPro = m_simulationInput.intensityOfPromtOccurrance*100.0f; // [%]
+    const double wBG  = m_simulationInput.intensityOfBackgroundOccurrance*100.0f;	// [%]
+    const double wPro = m_simulationInput.intensityOfPromtOccurrance*100.0f;		// [%]
 	const double wLT  = (100.0f - wBG - wPro); // [%]
 
 	if (wLT < 0.0f 
@@ -1320,34 +1320,59 @@ DLifeTime::DLTError getLastError() {
 	return DLT_C_WRAPPER::sharedInstance()->m_lastError;
 }
 
-void setLifeTime_1(bool lt1_activated, double tau1_in_nanoSeconds, double intensity1) {
+void setLifeTime_1(bool lt1_activated, double tau1_in_nanoSeconds, double intensity1, bool lt1_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement) {
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.lt1_activated = lt1_activated;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1 = tau1_in_nanoSeconds;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.intensity1 = intensity1;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1Distribution.enabled = lt1_distributionActivated;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1Distribution.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1Distribution.gridIncrement = gridIncrement;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1Distribution.gridNumber = gridNumber;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau1Distribution.param1 = param1;
 }
 
-void setLifeTime_2(bool lt2_activated, double tau2_in_nanoSeconds, double intensity2) {
+void setLifeTime_2(bool lt2_activated, double tau2_in_nanoSeconds, double intensity2, bool lt2_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement) {
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.lt2_activated = lt2_activated;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2 = tau2_in_nanoSeconds;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.intensity2 = intensity2;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2Distribution.enabled = lt2_distributionActivated;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2Distribution.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2Distribution.gridIncrement = gridIncrement;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2Distribution.gridNumber = gridNumber;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau2Distribution.param1 = param1;
 }
 
-void setLifeTime_3(bool lt3_activated, double tau3_in_nanoSeconds, double intensity3) {
+void setLifeTime_3(bool lt3_activated, double tau3_in_nanoSeconds, double intensity3, bool lt3_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement) {
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.lt3_activated = lt3_activated;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3 = tau3_in_nanoSeconds;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.intensity3 = intensity3;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3Distribution.enabled = lt3_distributionActivated;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3Distribution.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3Distribution.gridIncrement = gridIncrement;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3Distribution.gridNumber = gridNumber;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau3Distribution.param1 = param1;
 }
 
-void setLifeTime_4(bool lt4_activated, double tau4_in_nanoSeconds, double intensity4) {
+void setLifeTime_4(bool lt4_activated, double tau4_in_nanoSeconds, double intensity4, bool lt4_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement) {
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.lt4_activated = lt4_activated;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4 = tau4_in_nanoSeconds;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.intensity4 = intensity4;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4Distribution.enabled = lt4_distributionActivated;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4Distribution.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4Distribution.gridIncrement = gridIncrement;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4Distribution.gridNumber = gridNumber;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau4Distribution.param1 = param1;
 }
 
-void setLifeTime_5(bool lt5_activated, double tau5_in_nanoSeconds, double intensity5) {
+void setLifeTime_5(bool lt5_activated, double tau5_in_nanoSeconds, double intensity5, bool lt5_distributionActivated, DLifeTime::DLTDistributionFunction::Function functionType, double param1, int gridNumber, double gridIncrement) {
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.lt5_activated = lt5_activated;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5 = tau5_in_nanoSeconds;
 	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.intensity5 = intensity5;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5Distribution.enabled = lt5_distributionActivated;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5Distribution.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5Distribution.gridIncrement = gridIncrement;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5Distribution.gridNumber = gridNumber;
+	DLT_C_WRAPPER::sharedInstance()->m_simulationInput.tau5Distribution.param1 = param1;
 }
 
 void setStartOfA(double meanOfStart_A_in_milliVolt, double stddevOfStart_A_in_milliVolt) {

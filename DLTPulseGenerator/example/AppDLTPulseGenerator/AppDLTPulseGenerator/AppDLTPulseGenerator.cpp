@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017 Danny Petschke. All rights reserved.
+** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 ** 
 ** Redistribution and use in source and binary forms, with or without modification, 
 ** are permitted provided that the following conditions are met:
@@ -338,9 +338,9 @@ void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, cons
 }
 
 void showLicense() {
-	printf("/*****************************  BSD 4-clause license  **************************************\
+	printf("/*****************************  BSD 3-clause license  **************************************\
 \n**\n\
-** Copyright(c) 2017 Danny Petschke. All rights reserved.\n\
+** Copyright(c) 2017, 2018 Danny Petschke. All rights reserved.\n\
 **\n\
 ** Redistribution and use in source and binary forms, with or without modification,\n\
 ** are permitted provided that the following conditions are met :\n\
