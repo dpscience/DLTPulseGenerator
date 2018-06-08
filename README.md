@@ -26,6 +26,10 @@ forked by <b>SoftwareX (Elsevier)</b>: [https://github.com/ElsevierSoftwareX/SOF
 
 This [release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1) was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
 
+## DLTPulseGenerator v1.2
+
+This [release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2) was modified to allow the simulation of lifetime spectra consisting of non-Gaussian distributed and linearly combined Instrument Response Functions for the PDS A/B and MU. 
+
 # Example using C++
 
 ```c++
