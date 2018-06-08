@@ -31,7 +31,7 @@
 #**
 #*************************************************************************************************
 
-PATH_TO_LIBRARY = '.../DLTPulseGenerator.dll' #!full path + filename required!
+PATH_TO_LIBRARY = '.../x86/DLTPulseGenerator.dll' #!full path + filename required!
 
 import pyDLTPulseGenerator as dpg
 

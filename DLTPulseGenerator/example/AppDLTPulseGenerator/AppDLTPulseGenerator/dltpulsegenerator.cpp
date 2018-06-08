@@ -144,14 +144,50 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
     normal_distribution<double> m_distributionStopB;
 
     //DLTSetup:
-    default_random_engine m_generatorUncertaintyPDSDetectorA;
-    normal_distribution<double> m_distributionUncertaintyPDSDetectorA;
+	void *m_distributionPDSA1;
+	void *m_distributionPDSA2;
+	void *m_distributionPDSA3;
+	void *m_distributionPDSA4;
+	void *m_distributionPDSA5;
 
-    default_random_engine m_generatorUncertaintyPDSDetectorB;
-    normal_distribution<double> m_distributionUncertaintyPDSDetectorB;
+	void *m_distributionPDSB1;
+	void *m_distributionPDSB2;
+	void *m_distributionPDSB3;
+	void *m_distributionPDSB4;
+	void *m_distributionPDSB5;
 
-    default_random_engine m_generatorUncertaintyMU;
-    normal_distribution<double> m_distributionUncertaintyMU;
+	void *m_distributionMU1;
+	void *m_distributionMU2;
+	void *m_distributionMU3;
+	void *m_distributionMU4;
+	void *m_distributionMU5;
+
+	default_random_engine m_generator_PDSA1;
+	default_random_engine m_generator_PDSA2;
+	default_random_engine m_generator_PDSA3;
+	default_random_engine m_generator_PDSA4;
+	default_random_engine m_generator_PDSA5;
+
+	default_random_engine m_generator_PDSA;
+	piecewise_constant_distribution<double>m_distributionPDSA;
+
+	default_random_engine m_generator_PDSB1;
+	default_random_engine m_generator_PDSB2;
+	default_random_engine m_generator_PDSB3;
+	default_random_engine m_generator_PDSB4;
+	default_random_engine m_generator_PDSB5;
+
+	default_random_engine m_generator_PDSB;
+	piecewise_constant_distribution<double>m_distributionPDSB;
+
+	default_random_engine m_generator_MU1;
+	default_random_engine m_generator_MU2;
+	default_random_engine m_generator_MU3;
+	default_random_engine m_generator_MU4;
+	default_random_engine m_generator_MU5;
+
+	default_random_engine m_generator_MU;
+	piecewise_constant_distribution<double>m_distributionMU;
 
     default_random_engine m_generatorBackground;
     piecewise_constant_distribution<double>m_distributionBackground;
@@ -181,11 +217,31 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 	piecewise_constant_distribution<double> m_distributionLTSelector;
 
 	DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate() {
+		//Lifetime distribution:
 		m_distributionLT1 = nullptr;
 		m_distributionLT2 = nullptr;
 		m_distributionLT3 = nullptr;
 		m_distributionLT4 = nullptr;
 		m_distributionLT5 = nullptr;
+
+		//PDS and MU uncertainty:
+		m_distributionPDSA1 = nullptr;
+		m_distributionPDSA2 = nullptr;
+		m_distributionPDSA3 = nullptr;
+		m_distributionPDSA4 = nullptr;
+		m_distributionPDSA5 = nullptr;
+
+		m_distributionPDSB1 = nullptr;
+		m_distributionPDSB2 = nullptr;
+		m_distributionPDSB3 = nullptr;
+		m_distributionPDSB4 = nullptr;
+		m_distributionPDSB5 = nullptr;
+
+		m_distributionMU1 = nullptr;
+		m_distributionMU2 = nullptr;
+		m_distributionMU3 = nullptr;
+		m_distributionMU4 = nullptr;
+		m_distributionMU5 = nullptr;
 	}
 };
 
@@ -199,7 +255,7 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 	m_phsDistribution(phsDistribution),
 	m_setupInfo(setupeInfo),
 	m_pulseInfo(pulseInfo) {
-	m_sampleScaleFactor = 15000.0f / 1024.0f; //(15000/1024)=(x/m_setupInfo.numberOfCells)
+	m_sampleScaleFactor = 25000.0f / 1024.0f; //(15000/1024)=(x/m_setupInfo.numberOfCells)
 
 	DLifeTime::DLTError error = NONE_ERROR;
 
@@ -211,17 +267,6 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
     if ( m_setupInfo.numberOfCells <= 10 ) {
         if ( callback ) 
 			error |= DLifeTime::DLTErrorType::NUMBER_OF_CELLS_INVALID;
-    }
-
-    if ( m_setupInfo.PDSUncertaintyA < 0
-         || m_setupInfo.PDSUncertaintyB < 0 ) {
-        if ( callback ) 
-			error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
-    }
-
-    if ( m_setupInfo.MUUncertainty < 0 ) {
-        if ( callback ) 
-			error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
     }
 
     if ( m_pulseInfo.riseTime <= 0 ) {
@@ -303,7 +348,7 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 	//init event-counter:
     m_eventCounter = 0;
 
-    //Init of DLTPHS related random-generators:
+    //init of DLTPHS related random-generators:
 	m_privatePtr.get()->m_generatorStartA.seed(rand());
 	m_privatePtr.get()->m_generatorStartB.seed(rand());
 
@@ -316,24 +361,14 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
     m_privatePtr.get()->m_distributionStopA  = normal_distribution<double>(m_phsDistribution.meanOfStopA, m_phsDistribution.stddevOfStopA);
     m_privatePtr.get()->m_distributionStopB  = normal_distribution<double>(m_phsDistribution.meanOfStopB, m_phsDistribution.stddevOfStopB);
 
-	//init of DLTSimulationInput related random-generators:
+	//init of DLTSimulationInput related random generators:
 	initLTGenerator(&error, callback);
+
+	//init of DLTSetup related random generators:
+	initIRFGenerator(&error, callback);
     
-    //init of DLTSetup (PDS and MU) related random-generators:
-    m_privatePtr.get()->m_generatorUncertaintyPDSDetectorA.seed(rand());
-    m_privatePtr.get()->m_generatorUncertaintyPDSDetectorB.seed(rand());
-    m_privatePtr.get()->m_generatorUncertaintyMU.seed(rand());
-
-    m_privatePtr.get()->m_distributionUncertaintyPDSDetectorA = normal_distribution<double>(0.0f, m_setupInfo.PDSUncertaintyA);
-    m_privatePtr.get()->m_distributionUncertaintyPDSDetectorB = normal_distribution<double>(0.0f, m_setupInfo.PDSUncertaintyB);
-    m_privatePtr.get()->m_distributionUncertaintyMU			  = normal_distribution<double>(0.0f, m_setupInfo.MUUncertainty);
-
-	const double branchA = sqrt(m_setupInfo.PDSUncertaintyA*m_setupInfo.PDSUncertaintyA + m_setupInfo.MUUncertainty*m_setupInfo.MUUncertainty);
-	const double branchB = sqrt(m_setupInfo.PDSUncertaintyB*m_setupInfo.PDSUncertaintyB + m_setupInfo.MUUncertainty*m_setupInfo.MUUncertainty);
-	double estimatedFWHM = sqrt(branchA*branchA + branchB*branchB)*2*sqrt(2*log(2));
-	
-	//generate background 12x of x(FWHM) on the t0-left side:
-	estimatedFWHM *= 12;
+	//generate background 120x of x(FWHM) on the t0-left side:
+	const double estimatedFWHM = 120*estimateFWHM();
 
 	const int leftSideBin = (estimatedFWHM / m_setupInfo.sweep)*((double)m_setupInfo.numberOfCells*m_sampleScaleFactor);
 	const int backgroundBinCount = ((double)m_setupInfo.numberOfCells)*m_sampleScaleFactor; 
@@ -390,6 +425,82 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 		callback->onEvent(error);
 }
 
+double DLifeTime::DLTPulseGenerator::estimateFWHM() {
+	/* this estimation is based on a sum of wighted non-shifted gaussian distribution functions */
+	double pdsA = 0.0f;
+	double pdsB = 0.0f;
+	double mu = 0.0f;
+
+	/* PDS - A */
+	if (m_setupInfo.irfA.irf1PDS.enabled) {
+		pdsA += m_setupInfo.irfA.irf1PDS.uncertainty*m_setupInfo.irfA.irf1PDS.intensity;
+	}
+
+	if (m_setupInfo.irfA.irf2PDS.enabled) {
+		pdsA += m_setupInfo.irfA.irf2PDS.uncertainty*m_setupInfo.irfA.irf2PDS.intensity;
+	}
+
+	if (m_setupInfo.irfA.irf3PDS.enabled) {
+		pdsA += m_setupInfo.irfA.irf3PDS.uncertainty*m_setupInfo.irfA.irf3PDS.intensity;
+	}
+
+	if (m_setupInfo.irfA.irf4PDS.enabled) {
+		pdsA += m_setupInfo.irfA.irf4PDS.uncertainty*m_setupInfo.irfA.irf4PDS.intensity;
+	}
+
+	if (m_setupInfo.irfA.irf5PDS.enabled) {
+		pdsA += m_setupInfo.irfA.irf5PDS.uncertainty*m_setupInfo.irfA.irf5PDS.intensity;
+	}
+
+	/* PDS - B */
+	if (m_setupInfo.irfB.irf1PDS.enabled) {
+		pdsB += m_setupInfo.irfB.irf1PDS.uncertainty*m_setupInfo.irfB.irf1PDS.intensity;
+	}
+
+	if (m_setupInfo.irfB.irf2PDS.enabled) {
+		pdsB += m_setupInfo.irfB.irf2PDS.uncertainty*m_setupInfo.irfB.irf2PDS.intensity;
+	}
+
+	if (m_setupInfo.irfB.irf3PDS.enabled) {
+		pdsB += m_setupInfo.irfB.irf3PDS.uncertainty*m_setupInfo.irfB.irf3PDS.intensity;
+	}
+
+	if (m_setupInfo.irfB.irf4PDS.enabled) {
+		pdsB += m_setupInfo.irfB.irf4PDS.uncertainty*m_setupInfo.irfB.irf4PDS.intensity;
+	}
+
+	if (m_setupInfo.irfB.irf5PDS.enabled) {
+		pdsB += m_setupInfo.irfB.irf5PDS.uncertainty*m_setupInfo.irfB.irf5PDS.intensity;
+	}
+
+	/* MU */
+	if (m_setupInfo.irfMU.irf1MU.enabled) {
+		mu += m_setupInfo.irfMU.irf1MU.uncertainty*m_setupInfo.irfMU.irf1MU.intensity;
+	}
+
+	if (m_setupInfo.irfMU.irf2MU.enabled) {
+		mu += m_setupInfo.irfMU.irf2MU.uncertainty*m_setupInfo.irfMU.irf2MU.intensity;
+	}
+
+	if (m_setupInfo.irfMU.irf3MU.enabled) {
+		mu += m_setupInfo.irfMU.irf3MU.uncertainty*m_setupInfo.irfMU.irf3MU.intensity;
+	}
+
+	if (m_setupInfo.irfMU.irf4MU.enabled) {
+		mu += m_setupInfo.irfMU.irf4MU.uncertainty*m_setupInfo.irfMU.irf4MU.intensity;
+	}
+
+	if (m_setupInfo.irfMU.irf5MU.enabled) {
+		mu += m_setupInfo.irfMU.irf5MU.uncertainty*m_setupInfo.irfMU.irf5MU.intensity;
+	}
+
+	const double branchA = sqrt(pdsA*pdsA + mu*mu);
+	const double branchB = sqrt(pdsB*pdsB + mu*mu);
+	double estimatedFWHM = sqrt(branchA*branchA + branchB*branchB) * 2 * sqrt(2 * log(2));
+
+	return estimatedFWHM;
+}
+
 DLifeTime::DLTPulseGenerator::~DLTPulseGenerator() {
 	if (m_privatePtr.get()->m_distributionLT1) {
 		delete m_privatePtr.get()->m_distributionLT1;
@@ -414,6 +525,81 @@ DLifeTime::DLTPulseGenerator::~DLTPulseGenerator() {
 	if (m_privatePtr.get()->m_distributionLT5) {
 		delete m_privatePtr.get()->m_distributionLT5;
 		m_privatePtr.get()->m_distributionLT5 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSA1) {
+		delete m_privatePtr.get()->m_distributionPDSA1;
+		m_privatePtr.get()->m_distributionPDSA1 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSA2) {
+		delete m_privatePtr.get()->m_distributionPDSA2;
+		m_privatePtr.get()->m_distributionPDSA2 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSA3) {
+		delete m_privatePtr.get()->m_distributionPDSA3;
+		m_privatePtr.get()->m_distributionPDSA3 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSA4) {
+		delete m_privatePtr.get()->m_distributionPDSA4;
+		m_privatePtr.get()->m_distributionPDSA4 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSA5) {
+		delete m_privatePtr.get()->m_distributionPDSA5;
+		m_privatePtr.get()->m_distributionPDSA5 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSB1) {
+		delete m_privatePtr.get()->m_distributionPDSB1;
+		m_privatePtr.get()->m_distributionPDSB1 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSB2) {
+		delete m_privatePtr.get()->m_distributionPDSB2;
+		m_privatePtr.get()->m_distributionPDSB2 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSB3) {
+		delete m_privatePtr.get()->m_distributionPDSB3;
+		m_privatePtr.get()->m_distributionPDSB3 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSB4) {
+		delete m_privatePtr.get()->m_distributionPDSB4;
+		m_privatePtr.get()->m_distributionPDSB4 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionPDSB5) {
+		delete m_privatePtr.get()->m_distributionPDSB5;
+		m_privatePtr.get()->m_distributionPDSB5 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionMU1) {
+		delete m_privatePtr.get()->m_distributionMU1;
+		m_privatePtr.get()->m_distributionMU1 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionMU2) {
+		delete m_privatePtr.get()->m_distributionMU2;
+		m_privatePtr.get()->m_distributionMU2 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionMU3) {
+		delete m_privatePtr.get()->m_distributionMU3;
+		m_privatePtr.get()->m_distributionMU3 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionMU4) {
+		delete m_privatePtr.get()->m_distributionMU4;
+		m_privatePtr.get()->m_distributionMU4 = nullptr;
+	}
+
+	if (m_privatePtr.get()->m_distributionMU5) {
+		delete m_privatePtr.get()->m_distributionMU5;
+		m_privatePtr.get()->m_distributionMU5 = nullptr;
 	}
 
     m_privatePtr.release();
@@ -446,8 +632,8 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
         const double amplitudeInMVA = (!isCoincidence)?m_privatePtr.get()->m_distributionStartA(m_privatePtr.get()->m_generatorStartA):m_privatePtr.get()->m_distributionStopA(m_privatePtr.get()->m_generatorStopA);
         const double amplitudeInMVB = m_privatePtr.get()->m_distributionStopB(m_privatePtr.get()->m_generatorStopB);
 
-		const double start_t_in_ns = m_pulseInfo.delay + m_privatePtr.get()->m_distributionUncertaintyPDSDetectorA(m_privatePtr.get()->m_generatorUncertaintyPDSDetectorA) + m_privatePtr.get()->m_distributionUncertaintyMU(m_privatePtr.get()->m_generatorUncertaintyMU);
-        const double stop_t_in_ns  = nextLT - m_setupInfo.ATS + m_privatePtr.get()->m_distributionUncertaintyPDSDetectorB(m_privatePtr.get()->m_generatorUncertaintyPDSDetectorB) + m_privatePtr.get()->m_distributionUncertaintyMU(m_privatePtr.get()->m_generatorUncertaintyMU) + m_pulseInfo.delay;
+		const double start_t_in_ns = m_pulseInfo.delay + uncertaintyA();
+        const double stop_t_in_ns  = nextLT - m_setupInfo.ATS + uncertaintyB() + m_pulseInfo.delay;
 
         const int startCell = (start_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
         const int stopCell  = (stop_t_in_ns/ m_setupInfo.sweep)*deeperSampleDepth;
@@ -526,8 +712,8 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
         const double amplitudeInMVB = (!isCoincidence)?m_privatePtr.get()->m_distributionStartB(m_privatePtr.get()->m_generatorStartB):m_privatePtr.get()->m_distributionStopB(m_privatePtr.get()->m_generatorStopB);
         const double amplitudeInMVA = m_privatePtr.get()->m_distributionStopA(m_privatePtr.get()->m_generatorStopA);
 
-        const double start_t_in_ns = m_pulseInfo.delay + m_privatePtr.get()->m_distributionUncertaintyPDSDetectorB(m_privatePtr.get()->m_generatorUncertaintyPDSDetectorB) + m_privatePtr.get()->m_distributionUncertaintyMU(m_privatePtr.get()->m_generatorUncertaintyMU);
-        const double stop_t_in_ns  = nextLT + m_setupInfo.ATS + m_privatePtr.get()->m_distributionUncertaintyPDSDetectorA(m_privatePtr.get()->m_generatorUncertaintyPDSDetectorA) + m_privatePtr.get()->m_distributionUncertaintyMU(m_privatePtr.get()->m_generatorUncertaintyMU) + m_pulseInfo.delay;
+        const double start_t_in_ns = m_pulseInfo.delay + uncertaintyB();
+        const double stop_t_in_ns  = nextLT + m_setupInfo.ATS + uncertaintyA() + m_pulseInfo.delay;
 
         const int startCell = (start_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
         const int stopCell  = (stop_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
@@ -778,7 +964,6 @@ void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, D
 		}
 	}
 
-
 	//lifetime 3:
 	if (m_privatePtr.get()->m_distributionLT3) {
 		delete m_privatePtr.get()->m_distributionLT3;
@@ -834,7 +1019,6 @@ void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, D
 			m_privatePtr.get()->m_lt3Manager.add(m_simulationInput.tau3);
 		}
 	}
-
 
 	//lifetime 4:
 	if (m_privatePtr.get()->m_distributionLT4) {
@@ -892,7 +1076,6 @@ void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, D
 		}
 	}
 
-
 	//lifetime 5:
 	if (m_privatePtr.get()->m_distributionLT5) {
 		delete m_privatePtr.get()->m_distributionLT5;
@@ -948,6 +1131,773 @@ void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, D
 			m_privatePtr.get()->m_lt5Manager.add(m_simulationInput.tau5);
 		}
 	}
+}
+
+void DLifeTime::DLTPulseGenerator::initIRFGenerator(DLifeTime::DLTError *error, DLifeTime::DLTCallback *callback)
+{
+	/* irf PDS - A */
+	if (m_setupInfo.irfA.irf1PDS.enabled) {
+		if (m_setupInfo.irfA.irf1PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfA.irf1PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfA.irf2PDS.enabled) {
+		if (m_setupInfo.irfA.irf2PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfA.irf2PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfA.irf3PDS.enabled) {
+		if (m_setupInfo.irfA.irf3PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfA.irf3PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfA.irf4PDS.enabled) {
+		if (m_setupInfo.irfA.irf4PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfA.irf4PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfA.irf5PDS.enabled) {
+		if (m_setupInfo.irfA.irf5PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfA.irf5PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	/* irf PDS - B */
+	if (m_setupInfo.irfB.irf1PDS.enabled) {
+		if (m_setupInfo.irfB.irf1PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfB.irf1PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfB.irf2PDS.enabled) {
+		if (m_setupInfo.irfB.irf2PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfB.irf2PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfB.irf3PDS.enabled) {
+		if (m_setupInfo.irfB.irf3PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfB.irf3PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfB.irf4PDS.enabled) {
+		if (m_setupInfo.irfB.irf4PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfB.irf4PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfB.irf5PDS.enabled) {
+		if (m_setupInfo.irfB.irf5PDS.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfB.irf5PDS.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::PDS_UNCERTAINTY_INVALID;
+		}
+	}
+
+	/* irf MU */
+	if (m_setupInfo.irfMU.irf1MU.enabled) {
+		if (m_setupInfo.irfMU.irf1MU.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfMU.irf1MU.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfMU.irf2MU.enabled) {
+		if (m_setupInfo.irfMU.irf2MU.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfMU.irf2MU.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfMU.irf3MU.enabled) {
+		if (m_setupInfo.irfMU.irf3MU.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfMU.irf3MU.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfMU.irf4MU.enabled) {
+		if (m_setupInfo.irfMU.irf4MU.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfMU.irf4MU.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+	}
+
+	if (m_setupInfo.irfMU.irf5MU.enabled) {
+		if (m_setupInfo.irfMU.irf5MU.uncertainty < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+
+		if (m_setupInfo.irfMU.irf5MU.intensity < 0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::MU_UNCERTAINTY_INVALID;
+		}
+	}
+
+	/* irf PDS_A - 1 */
+	if (m_privatePtr.get()->m_distributionPDSA1) {
+		delete m_privatePtr.get()->m_distributionPDSA1;
+		m_privatePtr.get()->m_distributionPDSA1 = nullptr;
+	}
+
+	DLifeTime::DLTIRF irf = m_setupInfo.irfA.irf1PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSA1.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSA1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSA1 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSA1 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSA1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_A - 2 */
+	if (m_privatePtr.get()->m_distributionPDSA2) {
+		delete m_privatePtr.get()->m_distributionPDSA2;
+		m_privatePtr.get()->m_distributionPDSA2 = nullptr;
+	}
+
+	irf = m_setupInfo.irfA.irf2PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSA2.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSA2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSA2 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSA2 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSA2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_A - 3 */
+	if (m_privatePtr.get()->m_distributionPDSA3) {
+		delete m_privatePtr.get()->m_distributionPDSA3;
+		m_privatePtr.get()->m_distributionPDSA3 = nullptr;
+	}
+
+	irf = m_setupInfo.irfA.irf3PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSA3.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSA3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSA3 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSA3 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSA3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_A - 4 */
+	if (m_privatePtr.get()->m_distributionPDSA4) {
+		delete m_privatePtr.get()->m_distributionPDSA4;
+		m_privatePtr.get()->m_distributionPDSA4 = nullptr;
+	}
+
+	irf = m_setupInfo.irfA.irf4PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSA4.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSA4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSA4 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSA4 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSA4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_A - 5 */
+	if (m_privatePtr.get()->m_distributionPDSA5) {
+		delete m_privatePtr.get()->m_distributionPDSA5;
+		m_privatePtr.get()->m_distributionPDSA5 = nullptr;
+	}
+
+	irf = m_setupInfo.irfA.irf5PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSA5.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSA5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSA5 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSA5 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSA5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_B - 1 */
+	if (m_privatePtr.get()->m_distributionPDSB1) {
+		delete m_privatePtr.get()->m_distributionPDSB1;
+		m_privatePtr.get()->m_distributionPDSB1 = nullptr;
+	}
+
+	irf = m_setupInfo.irfB.irf1PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSB1.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSB1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSB1 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSB1 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSB1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_B - 2 */
+	if (m_privatePtr.get()->m_distributionPDSB2) {
+		delete m_privatePtr.get()->m_distributionPDSB2;
+		m_privatePtr.get()->m_distributionPDSB2 = nullptr;
+	}
+
+	irf = m_setupInfo.irfB.irf2PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSB2.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSB2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSB2 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSB2 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSB2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_B - 3 */
+	if (m_privatePtr.get()->m_distributionPDSB3) {
+		delete m_privatePtr.get()->m_distributionPDSB3;
+		m_privatePtr.get()->m_distributionPDSB3 = nullptr;
+	}
+
+	irf = m_setupInfo.irfB.irf3PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSB3.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSB3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSB3 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSB3 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSB3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_B - 4 */
+	if (m_privatePtr.get()->m_distributionPDSB4) {
+		delete m_privatePtr.get()->m_distributionPDSB4;
+		m_privatePtr.get()->m_distributionPDSB4 = nullptr;
+	}
+
+	irf = m_setupInfo.irfB.irf4PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSB4.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSB4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSB4 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSB4 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSB4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf PDS_B - 5 */
+	if (m_privatePtr.get()->m_distributionPDSB5) {
+		delete m_privatePtr.get()->m_distributionPDSB5;
+		m_privatePtr.get()->m_distributionPDSB5 = nullptr;
+	}
+
+	irf = m_setupInfo.irfB.irf5PDS;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_PDSB5.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionPDSB5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionPDSB5 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionPDSB5 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionPDSB5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf MU - 1 */
+	if (m_privatePtr.get()->m_distributionMU1) {
+		delete m_privatePtr.get()->m_distributionMU1;
+		m_privatePtr.get()->m_distributionMU1 = nullptr;
+	}
+
+	irf = m_setupInfo.irfMU.irf1MU;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_MU1.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionMU1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionMU1 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionMU1 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionMU1 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf MU - 2 */
+	if (m_privatePtr.get()->m_distributionMU2) {
+		delete m_privatePtr.get()->m_distributionMU2;
+		m_privatePtr.get()->m_distributionMU2 = nullptr;
+	}
+
+	irf = m_setupInfo.irfMU.irf2MU;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_MU2.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionMU2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionMU2 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionMU2 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionMU2 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf MU - 3 */
+	if (m_privatePtr.get()->m_distributionMU3) {
+		delete m_privatePtr.get()->m_distributionMU3;
+		m_privatePtr.get()->m_distributionMU3 = nullptr;
+	}
+
+	irf = m_setupInfo.irfMU.irf3MU;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_MU3.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionMU3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionMU3 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionMU3 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionMU3 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf MU - 4 */
+	if (m_privatePtr.get()->m_distributionMU4) {
+		delete m_privatePtr.get()->m_distributionMU4;
+		m_privatePtr.get()->m_distributionMU4 = nullptr;
+	}
+
+	irf = m_setupInfo.irfMU.irf4MU;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_MU4.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionMU4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionMU4 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionMU4 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionMU4 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	/* irf MU - 5 */
+	if (m_privatePtr.get()->m_distributionMU5) {
+		delete m_privatePtr.get()->m_distributionMU5;
+		m_privatePtr.get()->m_distributionMU5 = nullptr;
+	}
+
+	irf = m_setupInfo.irfMU.irf5MU;
+
+	if (irf.enabled) { //enabled?
+		m_privatePtr.get()->m_generator_MU5.seed(rand());
+
+		switch (irf.functionType)
+		{
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			m_privatePtr.get()->m_distributionMU5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			m_privatePtr.get()->m_distributionMU5 = new lognormal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			m_privatePtr.get()->m_distributionMU5 = new cauchy_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			m_privatePtr.get()->m_distributionMU5 = new normal_distribution<double>(irf.relativeShift, irf.uncertainty);
+			break;
+		}
+	}
+
+	double wIRF_1 = 0.0;
+	double wIRF_2 = 0.0;
+	double wIRF_3 = 0.0;
+	double wIRF_4 = 0.0;
+	double wIRF_5 = 0.0;
+
+	/* setup MU - selector */
+	if (m_setupInfo.irfMU.irf1MU.enabled)
+		wIRF_1 = m_setupInfo.irfMU.irf1MU.intensity * 100;
+
+	if (m_setupInfo.irfMU.irf2MU.enabled)
+		wIRF_2 = m_setupInfo.irfMU.irf2MU.intensity * 100;
+
+	if (m_setupInfo.irfMU.irf3MU.enabled)
+		wIRF_3 = m_setupInfo.irfMU.irf3MU.intensity * 100;
+
+	if (m_setupInfo.irfMU.irf4MU.enabled)
+		wIRF_4 = m_setupInfo.irfMU.irf4MU.intensity * 100;
+
+	if (m_setupInfo.irfMU.irf5MU.enabled)
+		wIRF_5 = m_setupInfo.irfMU.irf5MU.intensity * 100;
+
+	if (wIRF_1 + wIRF_2 + wIRF_3 + wIRF_4 + wIRF_5 > 100.0) {
+		if (callback && error)
+			*error |= DLifeTime::DLTErrorType::INVALID_SUM_OF_MU_IRF_INTENSITIES;
+	}
+
+	array<double, 6> intervalsMUSelector{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+	array<double, 5> weightsMUSelector{ wIRF_1, wIRF_2, wIRF_3, wIRF_4, wIRF_5 };
+
+	m_privatePtr.get()->m_generator_MU.seed(rand());
+	m_privatePtr.get()->m_distributionMU = piecewise_constant_distribution<double>(intervalsMUSelector.begin(), intervalsMUSelector.end(), weightsMUSelector.begin());
+
+
+	wIRF_1 = 0.0;
+	wIRF_2 = 0.0;
+	wIRF_3 = 0.0;
+	wIRF_4 = 0.0;
+	wIRF_5 = 0.0;
+
+	/* setup PDS - A - selector */
+	if (m_setupInfo.irfA.irf1PDS.enabled)
+		wIRF_1 = m_setupInfo.irfA.irf1PDS.intensity * 100;
+
+	if (m_setupInfo.irfA.irf2PDS.enabled)
+		wIRF_2 = m_setupInfo.irfA.irf2PDS.intensity * 100;
+
+	if (m_setupInfo.irfA.irf3PDS.enabled)
+		wIRF_3 = m_setupInfo.irfA.irf3PDS.intensity * 100;
+
+	if (m_setupInfo.irfA.irf4PDS.enabled)
+		wIRF_4 = m_setupInfo.irfA.irf4PDS.intensity * 100;
+
+	if (m_setupInfo.irfA.irf5PDS.enabled)
+		wIRF_5 = m_setupInfo.irfA.irf5PDS.intensity * 100;
+
+	if (wIRF_1 + wIRF_2 + wIRF_3 + wIRF_4 + wIRF_5 > 100.0) {
+		if (callback && error)
+			*error |= DLifeTime::DLTErrorType::INVALID_SUM_OF_PDS_IRF_INTENSITIES;
+	}
+
+	array<double, 6> intervalsPDSASelector{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+	array<double, 5> weightsPDSASelector{ wIRF_1, wIRF_2, wIRF_3, wIRF_4, wIRF_5 };
+
+	m_privatePtr.get()->m_generator_PDSA.seed(rand());
+	m_privatePtr.get()->m_distributionPDSA = piecewise_constant_distribution<double>(intervalsPDSASelector.begin(), intervalsPDSASelector.end(), weightsPDSASelector.begin());
+
+
+	wIRF_1 = 0.0;
+	wIRF_2 = 0.0;
+	wIRF_3 = 0.0;
+	wIRF_4 = 0.0;
+	wIRF_5 = 0.0;
+
+	/* setup PDS - B - selector */
+	if (m_setupInfo.irfB.irf1PDS.enabled)
+		wIRF_1 = m_setupInfo.irfB.irf1PDS.intensity * 100;
+
+	if (m_setupInfo.irfB.irf2PDS.enabled)
+		wIRF_2 = m_setupInfo.irfB.irf2PDS.intensity * 100;
+
+	if (m_setupInfo.irfB.irf3PDS.enabled)
+		wIRF_3 = m_setupInfo.irfB.irf3PDS.intensity * 100;
+
+	if (m_setupInfo.irfB.irf4PDS.enabled)
+		wIRF_4 = m_setupInfo.irfB.irf4PDS.intensity * 100;
+
+	if (m_setupInfo.irfB.irf5PDS.enabled)
+		wIRF_5 = m_setupInfo.irfB.irf5PDS.intensity * 100;
+
+	if (wIRF_1 + wIRF_2 + wIRF_3 + wIRF_4 + wIRF_5 > 100.0) {
+		if (callback && error)
+			*error |= DLifeTime::DLTErrorType::INVALID_SUM_OF_PDS_IRF_INTENSITIES;
+	}
+
+	array<double, 6> intervalsPDSBSelector{ 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 };
+	array<double, 5> weightsPDSBSelector{ wIRF_1, wIRF_2, wIRF_3, wIRF_4, wIRF_5 };
+
+	m_privatePtr.get()->m_generator_PDSB.seed(rand());
+	m_privatePtr.get()->m_distributionPDSB = piecewise_constant_distribution<double>(intervalsPDSBSelector.begin(), intervalsPDSBSelector.end(), weightsPDSBSelector.begin());	
 }
 
 double DLifeTime::DLTPulseGenerator::nextLifeTime(bool *bPromt, bool *bValid) {
@@ -1089,6 +2039,381 @@ double DLifeTime::DLTPulseGenerator::nextLifeTime(bool *bPromt, bool *bValid) {
     }
 
     return lt;
+}
+
+double DLifeTime::DLTPulseGenerator::uncertaintyA() {
+	const int fIndex = (int)(m_privatePtr.get()->m_distributionPDSA(m_privatePtr.get()->m_generator_PDSA));
+
+	double val = 0.0f;
+
+	switch (fIndex) {
+	case 0: {
+		switch (m_setupInfo.irfA.irf1PDS.functionType) {
+			case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+				val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA1)(m_privatePtr.get()->m_generator_PDSA1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+				val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA1)(m_privatePtr.get()->m_generator_PDSA1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+				val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSA1)(m_privatePtr.get()->m_generator_PDSA1);
+				break;
+
+			case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+			default:
+				val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA1)(m_privatePtr.get()->m_generator_PDSA1);
+				break;
+		}
+	}
+			break;
+
+	case 1: {
+		switch (m_setupInfo.irfA.irf2PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA2)(m_privatePtr.get()->m_generator_PDSA2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA2)(m_privatePtr.get()->m_generator_PDSA2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSA2)(m_privatePtr.get()->m_generator_PDSA2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA2)(m_privatePtr.get()->m_generator_PDSA2);
+			break;
+		}
+	}
+			break;
+
+	case 2: {
+		switch (m_setupInfo.irfA.irf3PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA3)(m_privatePtr.get()->m_generator_PDSA3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA3)(m_privatePtr.get()->m_generator_PDSA3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSA3)(m_privatePtr.get()->m_generator_PDSA3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA3)(m_privatePtr.get()->m_generator_PDSA3);
+			break;
+		}
+	}
+			break;
+
+	case 3: {
+		switch (m_setupInfo.irfA.irf4PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA4)(m_privatePtr.get()->m_generator_PDSA4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA4)(m_privatePtr.get()->m_generator_PDSA4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSA4)(m_privatePtr.get()->m_generator_PDSA4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA4)(m_privatePtr.get()->m_generator_PDSA4);
+			break;
+		}
+	}
+			break;
+
+	case 4: {
+		switch (m_setupInfo.irfA.irf5PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA5)(m_privatePtr.get()->m_generator_PDSA5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA5)(m_privatePtr.get()->m_generator_PDSA5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSA5)(m_privatePtr.get()->m_generator_PDSA5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSA5)(m_privatePtr.get()->m_generator_PDSA5);
+			break;
+		}
+	}
+			break;
+
+	default:
+		val += 0;
+		break;
+	}
+
+	addUncertaintyMU(&val);
+
+	return val;
+}
+
+double DLifeTime::DLTPulseGenerator::uncertaintyB() {
+	const int fIndex = (int)(m_privatePtr.get()->m_distributionPDSB(m_privatePtr.get()->m_generator_PDSB));
+
+	double val = 0.0f;
+
+	switch (fIndex) {
+	case 0: {
+		switch (m_setupInfo.irfB.irf1PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB1)(m_privatePtr.get()->m_generator_PDSB1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB1)(m_privatePtr.get()->m_generator_PDSB1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSB1)(m_privatePtr.get()->m_generator_PDSB1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB1)(m_privatePtr.get()->m_generator_PDSB1);
+			break;
+		}
+	}
+			break;
+
+	case 1: {
+		switch (m_setupInfo.irfB.irf2PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB2)(m_privatePtr.get()->m_generator_PDSB2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB2)(m_privatePtr.get()->m_generator_PDSB2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSB2)(m_privatePtr.get()->m_generator_PDSB2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB2)(m_privatePtr.get()->m_generator_PDSB2);
+			break;
+		}
+	}
+			break;
+
+	case 2: {
+		switch (m_setupInfo.irfB.irf3PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB3)(m_privatePtr.get()->m_generator_PDSB3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB3)(m_privatePtr.get()->m_generator_PDSB3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSB3)(m_privatePtr.get()->m_generator_PDSB3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB3)(m_privatePtr.get()->m_generator_PDSB3);
+			break;
+		}
+	}
+			break;
+
+	case 3: {
+		switch (m_setupInfo.irfB.irf4PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB4)(m_privatePtr.get()->m_generator_PDSB4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB4)(m_privatePtr.get()->m_generator_PDSB4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSB4)(m_privatePtr.get()->m_generator_PDSB4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB4)(m_privatePtr.get()->m_generator_PDSB4);
+			break;
+		}
+	}
+			break;
+
+	case 4: {
+		switch (m_setupInfo.irfB.irf5PDS.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB5)(m_privatePtr.get()->m_generator_PDSB5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB5)(m_privatePtr.get()->m_generator_PDSB5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionPDSB5)(m_privatePtr.get()->m_generator_PDSB5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionPDSB5)(m_privatePtr.get()->m_generator_PDSB5);
+			break;
+		}
+	}
+			break;
+
+	default:
+		val += 0;
+		break;
+	}
+
+	addUncertaintyMU(&val);
+
+	return val;
+}
+
+void DLifeTime::DLTPulseGenerator::addUncertaintyMU(double *val) {
+	if (!val)
+		return;
+
+	const int fIndex = (int)(m_privatePtr.get()->m_distributionMU(m_privatePtr.get()->m_generator_MU));
+
+	switch (fIndex) {
+	case 0: {
+		switch (m_setupInfo.irfMU.irf1MU.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU1)(m_privatePtr.get()->m_generator_MU1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			*val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionMU1)(m_privatePtr.get()->m_generator_MU1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			*val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionMU1)(m_privatePtr.get()->m_generator_MU1);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU1)(m_privatePtr.get()->m_generator_MU1);
+			break;
+		}
+	}
+			break;
+
+	case 1: {
+		switch (m_setupInfo.irfMU.irf2MU.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU2)(m_privatePtr.get()->m_generator_MU2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			*val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionMU2)(m_privatePtr.get()->m_generator_MU2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			*val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionMU2)(m_privatePtr.get()->m_generator_MU2);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU2)(m_privatePtr.get()->m_generator_MU2);
+			break;
+		}
+	}
+			break;
+
+	case 2: {
+		switch (m_setupInfo.irfMU.irf3MU.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU3)(m_privatePtr.get()->m_generator_MU3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			*val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionMU3)(m_privatePtr.get()->m_generator_MU3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			*val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionMU3)(m_privatePtr.get()->m_generator_MU3);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU3)(m_privatePtr.get()->m_generator_MU3);
+			break;
+		}
+	}
+			break;
+
+	case 3: {
+		switch (m_setupInfo.irfMU.irf4MU.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU4)(m_privatePtr.get()->m_generator_MU4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			*val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionMU4)(m_privatePtr.get()->m_generator_MU4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			*val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionMU4)(m_privatePtr.get()->m_generator_MU4);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU4)(m_privatePtr.get()->m_generator_MU4);
+			break;
+		}
+	}
+			break;
+
+	case 4: {
+		switch (m_setupInfo.irfMU.irf5MU.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU5)(m_privatePtr.get()->m_generator_MU5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			*val += (*(lognormal_distribution<double>*)m_privatePtr.get()->m_distributionMU5)(m_privatePtr.get()->m_generator_MU5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			*val += (*(cauchy_distribution<double>*)m_privatePtr.get()->m_distributionMU5)(m_privatePtr.get()->m_generator_MU5);
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			*val += (*(normal_distribution<double>*)m_privatePtr.get()->m_distributionMU5)(m_privatePtr.get()->m_generator_MU5);
+			break;
+		}
+	}
+			break;
+
+	default:
+		*val += 0;
+		break;
+	}
 }
 
 DLifeTime::DLTPointF::DLTPointF() : 
@@ -1395,13 +2720,75 @@ void setStopOfB(double meanOfStop_B_in_milliVolt, double stddevOfStop_B_in_milli
 	DLT_C_WRAPPER::sharedInstance()->m_phsDistribution.stddevOfStopB = stddevOfStop_B_in_milliVolt;
 }
 
-void setUncertaintyOfPDSDetectors(double uncertaintyPDS_detector_A_in_nanoSeconds, double uncertaintyPDS_detector_B_in_nanoSeconds) {
-	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.PDSUncertaintyA = uncertaintyPDS_detector_A_in_nanoSeconds;
-	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.PDSUncertaintyB = uncertaintyPDS_detector_B_in_nanoSeconds;
+void manipulate(DLifeTime::DLTIRF *irf, bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	if (irf)
+		return;
+
+	irf->enabled = enabled;
+	irf->functionType = functionType;
+	irf->intensity = intensity;
+	irf->uncertainty = uncertainty;
+	irf->relativeShift = relativeShift;
 }
 
-void setUncertaintyOfMU(double uncertaintyMU_in_nanoSeconds) {
-	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.MUUncertainty = uncertaintyMU_in_nanoSeconds;
+void setIRF_PDS_A_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_A_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_A_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_A_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_A_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_B_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_B_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_B_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_B_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_PDS_B_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_MU_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_MU_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_MU_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_MU_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU, enabled, functionType, intensity, uncertainty, relativeShift);
+}
+
+void setIRF_MU_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
+	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU, enabled, functionType, intensity, uncertainty, relativeShift);
 }
 
 void setATS(double ATS_in_nanoSeconds) {
