@@ -119,7 +119,9 @@ public:
 		INVALID_SUM_OF_WEIGTHS				= 0x00001000,
 		AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
 		AMPLITUDE_AND_PHS_MISFIT			= 0x00004000,
-		INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000
+		INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000,
+		INVALID_SUM_OF_PDS_IRF_INTENSITIES	= 0x00010000,
+		INVALID_SUM_OF_MU_IRF_INTENSITIES	= 0x00020000
 		*/
 
 		if ((m_error & DLTErrorType::NO_LIFETIMES_TO_SIMULATE)) 
@@ -154,6 +156,10 @@ public:
 			errorStr += "- misfit of amplitude and PHS\n";
 		if ((m_error & DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT))
 			errorStr += "- invalid input for lifetime distribution(s)\n";
+		if ((m_error & DLTErrorType::INVALID_SUM_OF_PDS_IRF_INTENSITIES))
+			errorStr += "- invalid sum of IRF intensities (PDS)\n";
+		if ((m_error & DLTErrorType::INVALID_SUM_OF_MU_IRF_INTENSITIES))
+			errorStr += "- invalid sum of IRF intensities (MU)\n";
 
 		return errorStr;
 	}

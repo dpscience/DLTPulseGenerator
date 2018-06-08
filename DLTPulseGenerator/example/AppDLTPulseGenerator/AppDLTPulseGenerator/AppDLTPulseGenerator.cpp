@@ -138,9 +138,471 @@ void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, cons
 	printf("Simulation parameters:\n\n");
 
 	printf("Setup:\n-----------------------------------------------\n");
-	printf("Uncertainty PDS of branch A:	%f [ns]\n", setup.PDSUncertaintyA);
-	printf("Uncertainty PDS of branch B:	%f [ns]\n", setup.PDSUncertaintyB);
-	printf("Uncertainty MU:			%f [ns]\n", setup.MUUncertainty);
+	DLTIRF irf = setup.irfA.irf1PDS;
+	printf("IRF PDS-A (1) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfA.irf2PDS;
+	printf("IRF PDS-A (2) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfA.irf3PDS;
+	printf("IRF PDS-A (3) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfA.irf4PDS;
+	printf("IRF PDS-A (4) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfA.irf5PDS;
+	printf("IRF PDS-A (5) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfB.irf1PDS;
+	printf("IRF PDS-B (1) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfB.irf2PDS;
+	printf("IRF PDS-B (2) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfB.irf3PDS;
+	printf("IRF PDS-B (3) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfB.irf4PDS;
+	printf("IRF PDS-B (4) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfB.irf5PDS;
+	printf("IRF PDS-B (5) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfMU.irf1MU;
+	printf("IRF MU (1) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfMU.irf2MU;
+	printf("IRF MU (2) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfMU.irf3MU;
+	printf("IRF MU (3) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfMU.irf4MU;
+	printf("IRF MU (4) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
+	irf = setup.irfMU.irf5MU;
+	printf("IRF MU (5) enabled?:		%i\n", irf.enabled);
+	if (irf.enabled) {
+		const char* name = {};
+		switch (irf.functionType) {
+		case DLifeTime::DLTDistributionFunction::Function::GAUSSIAN:
+			name = { "Gaussian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LOG_NORMAL:
+			name = { "Log-Normal" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::LORENTZIAN_CAUCHY:
+			name = { "Cauchy/Lorentzian" };
+			break;
+
+		case DLifeTime::DLTDistributionFunction::Function::UNKNOWN:
+		default:
+			name = { "Gaussian" };
+			break;
+		}
+
+		printf("--------------------------\n");
+		printf("Function-Type:			%s\n", name);
+		printf("Uncertainty:			%f [ns]\n", irf.uncertainty);
+		printf("Intensity:			%f\n", irf.intensity);
+		printf("Relative Shift:			%f [ns]\n", irf.relativeShift);
+		printf("--------------------------\n");
+	}
+
 	printf("Number of Cells:		%i \n", setup.numberOfCells);
 	printf("Sweep:				%f [ns]\n", setup.sweep);
 	printf("Arrival-Time Spread - ATS:	%f [ns]\n", setup.ATS);
