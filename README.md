@@ -14,7 +14,7 @@ DLTPulseGenerator library provides the optional compilation as <i>static</i> or 
 
 # How to cite this library?
 
-Petschke D., Staab T.E.M. <i>DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses</i>. SoftwareX (2018), https://doi.org/10.1016/j.softx.2018.04.002.
+Petschke D., Staab T.E.M. <i>DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses</i>. <b>SoftwareX (2018), https://doi.org/10.1016/j.softx.2018.04.002</b>.
 
 ## DLTPulseGenerator v1.0
 
