@@ -18,13 +18,13 @@ Petschke D., Staab T.E.M. <i>DLTPulseGenerator: A library for the simulation of 
 
 ## DLTPulseGenerator v1.0
 
-This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> refers to the original paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.04.002) and provides the simulation of lifetime spectra consisting of <i>discrete specific lifetimes</i>.
+This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> refers to the <b>original paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.04.002)</b> and provides the simulation of lifetime spectra consisting of <i>discrete specific lifetimes</i>.
 
 forked by <b>SoftwareX (Elsevier)</b>: [https://github.com/ElsevierSoftwareX/SOFTX-D-17-00077](https://github.com/ElsevierSoftwareX/SOFTX-D-17-00077) 
 
 ## DLTPulseGenerator v1.1
 
-This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the update paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.05.001) and was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
+This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the <b>update paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.05.001)</b> and was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
 
 ## DLTPulseGenerator v1.2
 
