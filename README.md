@@ -30,6 +30,10 @@ This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/t
 
 This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions for the PDS A/B and MU. 
 
+## Applications using DLTPulseGenerator library
+
+<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
+
 # Example using C++
 
 ```c++
