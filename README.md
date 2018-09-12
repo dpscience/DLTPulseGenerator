@@ -24,11 +24,11 @@ forked by <b>SoftwareX (Elsevier)</b>: [https://github.com/ElsevierSoftwareX/SOF
 
 ## DLTPulseGenerator v1.1
 
-This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the <b>update paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.05.001)</b> and was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
+This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the <b>update paper (v1.1) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.05.001)</b> and was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
 
 ## DLTPulseGenerator v1.2
 
-This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.06.003)</b> and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
+This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper (v1.2) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.06.003)</b> and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
 
 ## Applications using DLTPulseGenerator library
 
