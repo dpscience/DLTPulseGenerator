@@ -28,7 +28,7 @@ This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/t
 
 ## DLTPulseGenerator v1.2
 
-This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions for the PDS A/B and MU. 
+This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.06.003)</b> and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
 
 ## Applications using DLTPulseGenerator library
 
@@ -88,6 +88,8 @@ A <b>library wrapper</b> in <i>Python</i> ([pyDLTPulseGenerator.py](https://gith
 ![Generated Pulses](/pyDLTPulseGenerator/PulsesPythonAndPHS.png)
 
 # License (BSD-3-Clause)
+
+Copyright (c) 2016-2018 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
 
 Redistribution and use in source and binary forms, with or without modification,<br> 
 are permitted provided that the following conditions are met:<br><br>
