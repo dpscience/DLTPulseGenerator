@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 #**
 #*************************************************************************************************
 
-PATH_TO_LIBRARY = '.../DLTPulseGenerator.dll' #!full path + filename required!
+PATH_TO_LIBRARY = '.../x86/DLTPulseGenerator.dll' #!full path + filename required!
 
 import pyDLTPulseGenerator as dpg
 
@@ -85,6 +85,7 @@ pulseGen    = dpg.DLTPulseGenerator(phs,
     #INVALID_SUM_OF_WEIGTHS              = 0x00001000,
     #AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
     #AMPLITUDE_AND_PHS_MISFIT            = 0x00004000,
+    #INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000,
 #};
 
 print("DLTPulseGenerator initialized with error-code:");
@@ -134,6 +135,9 @@ if pulseGen.getError() != 0:
 
     if pulseGen.getError() & 20384:
         print("- amplitude and phs misfit.");
+
+    if pulseGen.getError() & 40768:
+        print("- invalid input for lifetime distribution(s).");
 
     quit(); #kill process on error!
 else:

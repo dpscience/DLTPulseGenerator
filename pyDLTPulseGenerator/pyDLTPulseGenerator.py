@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -35,18 +35,18 @@ import ctypes
 from ctypes import cdll
 
 def __information__():
-    print("#****************** pyDLTPulseGenerator 1.0 (20.10.2017) *******************")
+    print("#****************** pyDLTPulseGenerator 1.2 (05.06.2017) *******************")
     print("#**")
-    print("#** Copyright (C) 2017 Danny Petschke")
+    print("#** Copyright (C) 2017, 2018 Danny Petschke")
     print("#**")
-    print("#** Contact: danny.petschke@uni-wuerzburg.de/danny.petschke@dscientec.com")
+    print("#** Contact: danny.petschke@uni-wuerzburg.de")
     print("#**")
     print("#***************************************************************************\n")
 
 def __licence__():
     print("#*************************************************************************************************")
     print("#**")
-    print("#** Copyright (c) 2017 Danny Petschke. All rights reserved.")
+    print("#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.")
     print("#**")
     print("#** Redistribution and use in source and binary forms, with or without modification,") 
     print("#** are permitted provided that the following conditions are met:")
@@ -183,6 +183,27 @@ class DLTPHS:
         self.m_stddevOfStart_B_in_milliVolt = stddevOfStartB
         self.m_stddevOfStop_B_in_milliVolt = stddevOfStopB
 
+class DLTDistributionInfo:
+    m_enabled = False
+
+    #GAUSSIAN           = 0
+    #LOG_NORMAL         = 1
+    #LORENTZIAN_CAUCHY  = 2
+    
+    m_functionType = 0
+    m_param1 = 0.0
+    m_param2 = 0.0 #reserved for future implementations
+    m_gridCount = 0
+    m_gridIncrement = 0.0
+
+    def __init__(self, enabled = False, functionType = 0, param1 = 0.0, gridCount = 0, gridIncrement = 0.0):
+        self.m_enabled = enabled
+        self.m_functionType = functionType
+        self.m_param1 = param1
+        self.m_param2 = 0.0
+        self.m_gridCount = gridCount
+        self.m_gridIncrement = gridIncrement
+        
 class DLTSimulationInput:
     m_lt1_activated = True
     m_lt2_activated = True
@@ -196,6 +217,12 @@ class DLTSimulationInput:
     m_tau4_in_nanoSeconds = 0.0
     m_tau5_in_nanoSeconds = 0.0
 
+    m_distrInfo1 = DLTDistributionInfo()
+    m_distrInfo2 = DLTDistributionInfo()
+    m_distrInfo3 = DLTDistributionInfo()
+    m_distrInfo4 = DLTDistributionInfo()
+    m_distrInfo5 = DLTDistributionInfo()
+
     m_intensity1 = 0.25
     m_intensity2 = 0.25
     m_intensity3 = 0.5
@@ -207,11 +234,11 @@ class DLTSimulationInput:
 
     m_isStartStopAlternating = True;
 
-    def __init__(self, lt1_activated = True, tau1_in_nanoSeconds = 0.160, intensity1 = 0.25,
-               lt2_activated = True, tau2_in_nanoSeconds = 0.420, intensity2 = 0.25,
-               lt3_activated = True, tau3_in_nanoSeconds = 3.2, intensity3 = 0.5,
-               lt4_activated = False, tau4_in_nanoSeconds = 0.0, intensity4 = 0.0,
-               lt5_activated = False, tau5_in_nanoSeconds = 0.0, intensity5 = 0.0,
+    def __init__(self, lt1_activated = True, tau1_in_nanoSeconds = 0.160, intensity1 = 0.25, distrInfo1 = DLTDistributionInfo(),
+               lt2_activated = True, tau2_in_nanoSeconds = 0.420, intensity2 = 0.25, distrInfo2 = DLTDistributionInfo(),
+               lt3_activated = True, tau3_in_nanoSeconds = 3.2, intensity3 = 0.5, distrInfo3 = DLTDistributionInfo(),
+               lt4_activated = False, tau4_in_nanoSeconds = 0.0, intensity4 = 0.0, distrInfo4 = DLTDistributionInfo(),
+               lt5_activated = False, tau5_in_nanoSeconds = 0.0, intensity5 = 0.0, distrInfo5 = DLTDistributionInfo(),
                intensityOfPromtOccurrance = 0.2,
                intensityOfBackgroundOccurrance = 0.05,
                isStartStopAlternating = True):
@@ -233,33 +260,100 @@ class DLTSimulationInput:
         self.m_intensity4 = intensity4
         self.m_intensity5 = intensity5
 
+        self.m_distrInfo1 = distrInfo1
+        self.m_distrInfo2 = distrInfo2
+        self.m_distrInfo3 = distrInfo3
+        self.m_distrInfo4 = distrInfo4
+        self.m_distrInfo5 = distrInfo5
+
         self.m_intensityOfPromtOccurrance = intensityOfPromtOccurrance
         self.m_intensityOfBackgroundOccurrance = intensityOfBackgroundOccurrance
 
         self.m_isStartStopAlternating = isStartStopAlternating;
+
+class DLTIRF:
+    m_enabled = False
+
+    #GAUSSIAN           = 0
+    #LOG_NORMAL         = 1
+    #LORENTZIAN_CAUCHY  = 2
+    
+    m_functionType  = 0
+    m_relativeShift = 0.0
+    m_intensity     = 0.0 
+    m_uncertainty   = 0.0
+    
+    def __init__(self, enabled = False, functionType = 0, relativeShift = 0.0, intensity = 0.0, uncertainty = 0.0):
+        self.m_enabled = enabled
+        self.m_functionType = functionType
+        self.m_relativeShift = relativeShift
+        self.m_intensity = intensity
+        self.m_uncertainty = uncertainty
         
 class DLTSetup:
-    m_uncertaintyPDSDetector_A_in_nanoSeconds = 0.084932901
-    m_uncertaintyPDSDetector_B_in_nanoSeconds = 0.084932901
+    #PDS-A:
+    m_irf_PDSA_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901)
+    m_irf_PDSA_2 = DLTIRF()
+    m_irf_PDSA_3 = DLTIRF()
+    m_irf_PDSA_4 = DLTIRF()
+    m_irf_PDSA_5 = DLTIRF()
 
-    m_uncertaintyMU_in_nanoSeconds = 0.0025
+    #PDS-B:
+    m_irf_PDSB_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901)
+    m_irf_PDSB_2 = DLTIRF()
+    m_irf_PDSB_3 = DLTIRF()
+    m_irf_PDSB_4 = DLTIRF()
+    m_irf_PDSB_5 = DLTIRF()
+
+    #MU:
+    m_irf_MU_1 = DLTIRF(True, 0, 0.0, 1.0, 0.0025)
+    m_irf_MU_2 = DLTIRF()
+    m_irf_MU_3 = DLTIRF()
+    m_irf_MU_4 = DLTIRF()
+    m_irf_MU_5 = DLTIRF()
 
     m_ATS_in_nanoSeconds = 0.25
 
     m_sweep_in_nanoSeconds = 200.0
     m_numberOfCells = 1024
 
-    def __init__(self, uncertaintyPDSDetector_A_in_nanoSeconds = 0.084932901,
-                 uncertaintyPDSDetector_B_in_nanoSeconds = 0.084932901,
-                 uncertaintyMU_in_nanoSeconds = 0.0025,
+    def __init__(self,
+                 irf_PDSA_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901),
+                 irf_PDSA_2 = DLTIRF(),
+                 irf_PDSA_3 = DLTIRF(),
+                 irf_PDSA_4 = DLTIRF(),
+                 irf_PDSA_5 = DLTIRF(),
+                 irf_PDSB_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901),
+                 irf_PDSB_2 = DLTIRF(),
+                 irf_PDSB_3 = DLTIRF(),
+                 irf_PDSB_4 = DLTIRF(),
+                 irf_PDSB_5 = DLTIRF(),
+                 irf_MU_1 = DLTIRF(True, 0, 0.0, 1.0, 0.0025),
+                 irf_MU_2 = DLTIRF(),
+                 irf_MU_3 = DLTIRF(),
+                 irf_MU_4 = DLTIRF(),
+                 irf_MU_5 = DLTIRF(),
                  ATS_in_nanoSeconds = 0.25,
                  sweep_in_nanoSeconds = 200.0,
                  numberOfCells = 1024):
-        self.m_uncertaintyPDSDetector_A_in_nanoSeconds = uncertaintyPDSDetector_A_in_nanoSeconds
-        self.m_uncertaintyPDSDetector_B_in_nanoSeconds = uncertaintyPDSDetector_B_in_nanoSeconds
+        self.m_irf_PDSA_1 = irf_PDSA_1;
+        self.m_irf_PDSA_2 = irf_PDSA_2;
+        self.m_irf_PDSA_3 = irf_PDSA_3;
+        self.m_irf_PDSA_4 = irf_PDSA_4;
+        self.m_irf_PDSA_5 = irf_PDSA_5;
 
-        self.m_uncertaintyMU_in_nanoSeconds = uncertaintyMU_in_nanoSeconds
+        self.m_irf_PDSB_1 = irf_PDSB_1;
+        self.m_irf_PDSB_2 = irf_PDSB_2;
+        self.m_irf_PDSB_3 = irf_PDSB_3;
+        self.m_irf_PDSB_4 = irf_PDSB_4;
+        self.m_irf_PDSB_5 = irf_PDSB_5;
 
+        self.m_irf_MU_1 = irf_MU_1;
+        self.m_irf_MU_2 = irf_MU_2;
+        self.m_irf_MU_3 = irf_MU_3;
+        self.m_irf_MU_4 = irf_MU_4;
+        self.m_irf_MU_5 = irf_MU_5;
+        
         self.m_ATS_in_nanoSeconds = ATS_in_nanoSeconds
 
         self.m_sweep_in_nanoSeconds = sweep_in_nanoSeconds
@@ -309,19 +403,44 @@ class DLTPulseGenerator:
         #DLTSimulationInput:
         self.__dllPtr.setLifeTime_1(ctypes.c_bool(dLTSimulationInput.m_lt1_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau1_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity1))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity1),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo1.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo1.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo1.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo1.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo1.m_gridIncrement))
         self.__dllPtr.setLifeTime_2(ctypes.c_bool(dLTSimulationInput.m_lt2_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau2_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity2))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity2),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo2.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo2.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo2.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo2.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo2.m_gridIncrement))
         self.__dllPtr.setLifeTime_3(ctypes.c_bool(dLTSimulationInput.m_lt3_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau3_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity3))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity3),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo3.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo3.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo3.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo3.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo3.m_gridIncrement))
         self.__dllPtr.setLifeTime_4(ctypes.c_bool(dLTSimulationInput.m_lt4_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau4_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity4))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity4),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo4.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo4.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo4.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo4.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo4.m_gridIncrement))
         self.__dllPtr.setLifeTime_5(ctypes.c_bool(dLTSimulationInput.m_lt5_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau5_in_nanoSeconds),
-                                    ctypes.c_double(dLTSimulationInput.m_intensity5))
+                                    ctypes.c_double(dLTSimulationInput.m_intensity5),
+                                    ctypes.c_bool(dLTSimulationInput.m_distrInfo5.m_enabled),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo5.m_functionType),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo5.m_param1),
+                                    ctypes.c_int(dLTSimulationInput.m_distrInfo5.m_gridCount),
+                                    ctypes.c_double(dLTSimulationInput.m_distrInfo5.m_gridIncrement))
         self.__dllPtr.setStartStopAlternating(ctypes.c_bool(dLTSimulationInput.m_isStartStopAlternating))
 
         #DLTPHS:
@@ -335,9 +454,100 @@ class DLTPulseGenerator:
                                   ctypes.c_double(dLTPHSDistribution.m_stddevOfStop_B_in_milliVolt))
         
         #DLTSetup:
-        self.__dllPtr.setUncertaintyOfPDSDetectors(ctypes.c_double(dLTSetupInfo.m_uncertaintyPDSDetector_A_in_nanoSeconds),
-                                                   ctypes.c_double(dLTSetupInfo.m_uncertaintyPDSDetector_B_in_nanoSeconds))
-        self.__dllPtr.setUncertaintyOfMU(ctypes.c_double(dLTSetupInfo.m_uncertaintyMU_in_nanoSeconds))
+        self.__dllPtr.setIRF_PDS_A_1(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_1.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSA_1.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_1.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_1.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_1.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_A_2(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_2.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSA_2.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_2.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_2.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_2.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_A_3(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_3.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSA_3.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_3.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_3.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_3.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_A_4(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_4.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSA_4.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_4.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_4.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_4.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_A_5(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_5.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSA_5.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_5.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_5.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSA_5.m_relativeShift))
+
+
+        self.__dllPtr.setIRF_PDS_B_1(ctypes.c_bool(dLTSetupInfo.m_irf_PDSB_1.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSB_1.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_1.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_1.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_1.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_B_2(ctypes.c_bool(dLTSetupInfo.m_irf_PDSB_2.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSB_2.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_2.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_2.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_2.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_B_3(ctypes.c_bool(dLTSetupInfo.m_irf_PDSB_3.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSB_3.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_3.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_3.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_3.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_B_4(ctypes.c_bool(dLTSetupInfo.m_irf_PDSB_4.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSB_4.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_4.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_4.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_4.m_relativeShift))
+
+        self.__dllPtr.setIRF_PDS_B_5(ctypes.c_bool(dLTSetupInfo.m_irf_PDSB_5.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_PDSB_5.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_5.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_5.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_PDSB_5.m_relativeShift))
+
+
+        self.__dllPtr.setIRF_MU_1(ctypes.c_bool(dLTSetupInfo.m_irf_MU_1.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_MU_1.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_1.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_1.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_1.m_relativeShift))
+
+        self.__dllPtr.setIRF_MU_2(ctypes.c_bool(dLTSetupInfo.m_irf_MU_2.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_MU_2.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_2.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_2.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_2.m_relativeShift))
+
+        self.__dllPtr.setIRF_MU_3(ctypes.c_bool(dLTSetupInfo.m_irf_MU_3.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_MU_3.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_3.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_3.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_3.m_relativeShift))
+
+        self.__dllPtr.setIRF_MU_4(ctypes.c_bool(dLTSetupInfo.m_irf_MU_4.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_MU_4.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_4.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_4.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_4.m_relativeShift))
+
+        self.__dllPtr.setIRF_MU_5(ctypes.c_bool(dLTSetupInfo.m_irf_MU_5.m_enabled),
+                                     ctypes.c_int(dLTSetupInfo.m_irf_MU_5.m_functionType),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_5.m_intensity),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_5.m_uncertainty),
+                                     ctypes.c_double(dLTSetupInfo.m_irf_MU_5.m_relativeShift))
+        
+
+        
         self.__dllPtr.setATS(ctypes.c_double(dLTSetupInfo.m_ATS_in_nanoSeconds))
         self.__dllPtr.setSweep(ctypes.c_double(dLTSetupInfo.m_sweep_in_nanoSeconds))
         self.__dllPtr.setNumberOfCells(ctypes.c_int(dLTSetupInfo.m_numberOfCells))

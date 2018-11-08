@@ -1,0 +1,9 @@
+
+*.db
+*.obj
+*.tlog
+*.idb
+*.ilk
+*.pdb
+DLTPulseGenerator/example/AppDLTPulseGenerator/AppDLTPulseGenerator/x64/
+DLTPulseGenerator/example/AppDLTPulseGenerator/x64/

@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017 Danny Petschke. All rights reserved.
+** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without modification,
 ** are permitted provided that the following conditions are met:
@@ -119,6 +119,9 @@ public:
 		INVALID_SUM_OF_WEIGTHS				= 0x00001000,
 		AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
 		AMPLITUDE_AND_PHS_MISFIT			= 0x00004000,
+		INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000,
+		INVALID_SUM_OF_PDS_IRF_INTENSITIES	= 0x00010000,
+		INVALID_SUM_OF_MU_IRF_INTENSITIES	= 0x00020000
 		*/
 
 		if ((m_error & DLTErrorType::NO_LIFETIMES_TO_SIMULATE)) 
@@ -140,9 +143,9 @@ public:
 		if ((m_error & DLTErrorType::INTENSITY_OF_LIFETIME_BELOW_ZERO))
 			errorStr += "- negative intensity of all or one lifetime component\n";
 		if ((m_error & DLTErrorType::INTENSITY_OF_BKGRD_BELOW_ZERO))
-			errorStr += "- weight of background occurrences < 0\n";
+			errorStr += "- weight of background occurrances < 0\n";
 		if ((m_error & DLTErrorType::INTENSITY_OF_PROMT_BELOW_ZERO))
-			errorStr += "- weight of promt events < 0\n";
+			errorStr += "- weight of prompt events < 0\n";
 		if ((m_error & DLTErrorType::INVALID_SUM_OF_WEIGTHS))
 			errorStr += "- no lifetimes to simulate\n";
 		if ((m_error & DLTErrorType::AMPLITUDE_AND_PULSE_POLARITY_MISFIT))
@@ -151,6 +154,12 @@ public:
 			errorStr += "- all lifetimes are disabled\n";
 		if ((m_error & DLTErrorType::AMPLITUDE_AND_PHS_MISFIT))
 			errorStr += "- misfit of amplitude and PHS\n";
+		if ((m_error & DLTErrorType::INVALID_LIFETIME_DISTRIBUTION_INPUT))
+			errorStr += "- invalid input for lifetime distribution(s)\n";
+		if ((m_error & DLTErrorType::INVALID_SUM_OF_PDS_IRF_INTENSITIES))
+			errorStr += "- invalid sum of IRF intensities (PDS)\n";
+		if ((m_error & DLTErrorType::INVALID_SUM_OF_MU_IRF_INTENSITIES))
+			errorStr += "- invalid sum of IRF intensities (MU)\n";
 
 		return errorStr;
 	}
