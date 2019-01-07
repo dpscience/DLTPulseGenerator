@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
+** Copyright (c) 2017 - 2019 Danny Petschke. All rights reserved.
 ** 
 ** Redistribution and use in source and binary forms, with or without modification, 
 ** are permitted provided that the following conditions are met:
@@ -46,7 +46,7 @@ void showLicense();
 void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, const DLTPHS& phs, const DLTSimulationInput& simulationInput);
 
 int main() {
-	printf("This Software shows the Application of 'DLTPulseGenerator' library.\n\n");
+	printf("This Software shows the Application of 'DLTPulseGenerator (v1.3)' library.\n\n");
 	
 	showLicense();
 	
@@ -608,11 +608,80 @@ void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, cons
 	printf("Arrival-Time Spread - ATS:	%f [ns]\n", setup.ATS);
 
 	printf("\nPulse-Definition:\n-----------------------------------------------\n");
-	printf("Rise-Time:			%f [ns]\n", pulse.riseTime);
-	printf("Pulse-Width:			%f [ns]\n", pulse.pulseWidth);
+
 	printf("Amplitude:			%f [mV]\n", pulse.amplitude);
 	printf("Polarity (+?):			%i \n", pulse.isPositiveSignalPolarity);
 	printf("Delay:				%f [ns]\n", pulse.delay);
+
+	printf("Digitization enabled?:		%i\n", pulse.digitizationInfo.enabled);
+
+	if (pulse.digitizationInfo.enabled) {
+		printf("--------------------------\n");
+		printf("Depth:				%i [bit]\n", pulse.digitizationInfo.digitizationDepth);
+		printf("--------------------------\n");
+	}
+
+	printf("\nPulse-A:\n--------------------------\n");
+
+	printf("Rise-Time:			%f [ns]\n", pulse.pulseA.riseTime);
+	printf("Pulse-Width:			%f [ns]\n", pulse.pulseA.pulseWidth);
+
+	printf("Baseline Jitter enabled?:	%i\n", pulse.pulseA.baselineOffsetJitterInfoV.enabled);
+
+	if (pulse.pulseA.baselineOffsetJitterInfoV.enabled) {
+		printf("--------------------------\n");
+		printf("Mean:				%f [mV]\n", pulse.pulseA.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter);
+		printf("Uncertainty:			%f [mV]\n", pulse.pulseA.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter);
+		printf("--------------------------\n");
+	}
+
+	printf("Random Noise enabled?:		%i\n", pulse.pulseA.randomNoiseInfoV.enabled);
+
+	if (pulse.pulseA.randomNoiseInfoV.enabled) {
+		printf("--------------------------\n");
+		printf("Noise:				%f [mV]\n", pulse.pulseA.randomNoiseInfoV.rndNoise);
+		printf("--------------------------\n");
+	}
+
+	printf("(Time) Non-linearity enabled?:	%i\n", pulse.pulseA.timeAxisNonLinearityInfoT.enabled);
+
+	if (pulse.pulseA.timeAxisNonLinearityInfoT.enabled) {
+		printf("--------------------------\n");
+		printf("Fixed Pattern Aperture Jitter:	%f [ns]\n", pulse.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter);
+		printf("Random Aperture Jitter:		%f [ns]\n", pulse.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter);
+		printf("--------------------------\n");
+	}
+
+	printf("\nPulse-B:\n--------------------------\n");
+
+	printf("Rise-Time:			%f [ns]\n", pulse.pulseB.riseTime);
+	printf("Pulse-Width:			%f [ns]\n", pulse.pulseB.pulseWidth);
+
+	printf("Baseline Jitter enabled?:	%i\n", pulse.pulseB.baselineOffsetJitterInfoV.enabled);
+
+	if (pulse.pulseB.baselineOffsetJitterInfoV.enabled) {
+		printf("--------------------------\n");
+		printf("Mean:				%f [mV]\n", pulse.pulseB.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter);
+		printf("Uncertainty:			%f [mV]\n", pulse.pulseB.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter);
+		printf("--------------------------\n");
+	}
+
+	printf("Random Noise enabled?:		%i\n", pulse.pulseB.randomNoiseInfoV.enabled);
+
+	if (pulse.pulseB.randomNoiseInfoV.enabled) {
+		printf("--------------------------\n");
+		printf("Noise:				%f [mV]\n", pulse.pulseB.randomNoiseInfoV.rndNoise);
+		printf("--------------------------\n");
+	}
+
+	printf("(Time) Non-linearity enabled?:	%i\n", pulse.pulseB.timeAxisNonLinearityInfoT.enabled);
+
+	if (pulse.pulseB.timeAxisNonLinearityInfoT.enabled) {
+		printf("--------------------------\n");
+		printf("Fixed Pattern Aperture Jitter:	%f [ns]\n", pulse.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter);
+		printf("Random Aperture Jitter:		%f [ns]\n", pulse.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter);
+		printf("--------------------------\n");
+	}
 
 	printf("\nPHS:\n-----------------------------------------------\n");
 	printf("Mean Start of A:		%f [ns]\n", phs.meanOfStartA);
@@ -802,7 +871,7 @@ void showParameterInformation(const DLTSetup& setup, const DLTPulse& pulse, cons
 void showLicense() {
 	printf("/*****************************  BSD 3-clause license  **************************************\
 \n**\n\
-** Copyright(c) 2017, 2018 Danny Petschke. All rights reserved.\n\
+** Copyright (c) 2017 - 2019 Danny Petschke. All rights reserved.\n\
 **\n\
 ** Redistribution and use in source and binary forms, with or without modification,\n\
 ** are permitted provided that the following conditions are met :\n\

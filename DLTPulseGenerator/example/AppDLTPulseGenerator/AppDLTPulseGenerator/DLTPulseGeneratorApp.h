@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
+** Copyright (c) 2017 - 2019 Danny Petschke. All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without modification,
 ** are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 **
 ***********************************************************************************************/
 
-/* Wrapper-class which inherits from class DLifeTime::DLTCallback to manage the Error-Handling */
+/* Wrapper-class which inherits from class DLifeTime::DLTCallback to manage Error-Handling */
 
 #include "dltpulsegenerator.h"
 
@@ -101,27 +101,32 @@ public:
 		string errorStr = "";
 
 		/*
-		NONE_ERROR							= 0x00000000,
+		NONE_ERROR										= 0x00000000,
 
-		NO_LIFETIMES_TO_SIMULATE			= 0x00000001,
+		NO_LIFETIMES_TO_SIMULATE						= 0x00000001,
 
-		SWEEP_INVALID						= 0x00000002,
-		NUMBER_OF_CELLS_INVALID				= 0x00000004,
-		PDS_UNCERTAINTY_INVALID				= 0x00000008,
-		MU_UNCERTAINTY_INVALID				= 0x00000010,
-		PULSE_RISE_TIME_INVALID				= 0x00000020,
-		PULSE_WIDTH_INVALID					= 0x00000040,
-		DELAY_INVALID						= 0x00000080,
-		DELAY_LARGER_THAN_SWEEP				= 0x00000100,
-		INTENSITY_OF_LIFETIME_BELOW_ZERO	= 0x00000200,
-		INTENSITY_OF_BKGRD_BELOW_ZERO		= 0x00000400,
-		INTENSITY_OF_PROMT_BELOW_ZERO		= 0x00000800,
-		INVALID_SUM_OF_WEIGTHS				= 0x00001000,
-		AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
-		AMPLITUDE_AND_PHS_MISFIT			= 0x00004000,
-		INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000,
-		INVALID_SUM_OF_PDS_IRF_INTENSITIES	= 0x00010000,
-		INVALID_SUM_OF_MU_IRF_INTENSITIES	= 0x00020000
+		SWEEP_INVALID									= 0x00000002,
+		NUMBER_OF_CELLS_INVALID							= 0x00000004,
+		PDS_UNCERTAINTY_INVALID							= 0x00000008,
+		MU_UNCERTAINTY_INVALID							= 0x00000010,
+		PULSE_RISE_TIME_INVALID							= 0x00000020,
+		PULSE_WIDTH_INVALID								= 0x00000040,
+		DELAY_INVALID									= 0x00000080,
+		DELAY_LARGER_THAN_SWEEP							= 0x00000100,
+		INTENSITY_OF_LIFETIME_BELOW_ZERO				= 0x00000200,
+		INTENSITY_OF_BKGRD_BELOW_ZERO					= 0x00000400,
+		INTENSITY_OF_PROMT_BELOW_ZERO					= 0x00000800,
+		INVALID_SUM_OF_WEIGTHS							= 0x00001000,
+		AMPLITUDE_AND_PULSE_POLARITY_MISFIT				= 0x00002000,
+		AMPLITUDE_AND_PHS_MISFIT						= 0x00004000,
+		INVALID_LIFETIME_DISTRIBUTION_INPUT				= 0x00008000,
+		INVALID_SUM_OF_PDS_IRF_INTENSITIES				= 0x00010000,
+		INVALID_SUM_OF_MU_IRF_INTENSITIES				= 0x00020000,
+		INVALID_VOLTAGE_BASELINE_JITTER					= 0x00040000,
+		INVALID_VOLTAGE_RND_NOISE						= 0x00080000,
+		INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER = 0x00100000,
+		INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER	= 0x00200000,
+		INVALID_DIGITIZATION_DEPTH						= 0x00400000
 		*/
 
 		if ((m_error & DLTErrorType::NO_LIFETIMES_TO_SIMULATE)) 
@@ -160,6 +165,16 @@ public:
 			errorStr += "- invalid sum of IRF intensities (PDS)\n";
 		if ((m_error & DLTErrorType::INVALID_SUM_OF_MU_IRF_INTENSITIES))
 			errorStr += "- invalid sum of IRF intensities (MU)\n";
+		if ((m_error & DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER))
+			errorStr += "- invalid voltage aperture baseline jitter value\n";
+		if ((m_error & DLTErrorType::INVALID_VOLTAGE_RND_NOISE))
+			errorStr += "- invalid voltage random noise value\n";
+		if ((m_error & DLTErrorType::INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER))
+			errorStr += "- invalid time axis (fixed) pattern aperture jitter value\n";
+		if ((m_error & DLTErrorType::INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER))
+			errorStr += "- invalid time axis random aperture jitter value\n";
+		if ((m_error & DLTErrorType::INVALID_DIGITIZATION_DEPTH))
+			errorStr += "- invalid digitization depth value\n";
 
 		return errorStr;
 	}

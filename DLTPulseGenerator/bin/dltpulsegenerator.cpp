@@ -1,6 +1,6 @@
 /*******************************************************************************************
 **
-** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
+** Copyright (c) 2017 - 2019 Danny Petschke. All rights reserved.
 **
 ** Redistribution and use in source and binary forms, with or without modification,
 ** are permitted provided that the following conditions are met:
@@ -130,6 +130,32 @@ class DLifeTime::DLTPulseGenerator::DLTDistributionManager {
 class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
     friend class DLifeTime::DLTPulseGenerator;
 
+	//DLTPulse:
+	default_random_engine m_generatorPulseBaselineJitterA;             // voltage domain
+	normal_distribution<double> m_distributionPulseBaselineJitterA;
+
+	default_random_engine m_generatorPulseRndNoiseA;	               // voltage domain
+	normal_distribution<double> m_distributionPulseRndNoiseA;
+
+	default_random_engine m_generatorPulseFixedPatternApertureJitterA; // time domain
+	normal_distribution<double> m_distributionPulseFixedPatternApertureJitterA;
+
+	default_random_engine m_generatorPulseRndApertureJitterA;          // time domain
+	normal_distribution<double> m_distributionPulseRndApertureJitterA;
+
+	
+	default_random_engine m_generatorPulseBaselineJitterB;             // voltage domain
+	normal_distribution<double> m_distributionPulseBaselineJitterB;
+
+	default_random_engine m_generatorPulseRndNoiseB;	               // voltage domain
+	normal_distribution<double> m_distributionPulseRndNoiseB;
+
+	default_random_engine m_generatorPulseFixedPatternApertureJitterB; // time domain
+	normal_distribution<double> m_distributionPulseFixedPatternApertureJitterB;
+
+	default_random_engine m_generatorPulseRndApertureJitterB;          // time domain
+	normal_distribution<double> m_distributionPulseRndApertureJitterB;
+
     //DLTPHS:
     default_random_engine m_generatorStartA;
     default_random_engine m_generatorStopA;
@@ -169,7 +195,7 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 	default_random_engine m_generator_PDSA5;
 
 	default_random_engine m_generator_PDSA;
-	piecewise_constant_distribution<double>m_distributionPDSA;
+	piecewise_constant_distribution<double> m_distributionPDSA;
 
 	default_random_engine m_generator_PDSB1;
 	default_random_engine m_generator_PDSB2;
@@ -178,7 +204,7 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 	default_random_engine m_generator_PDSB5;
 
 	default_random_engine m_generator_PDSB;
-	piecewise_constant_distribution<double>m_distributionPDSB;
+	piecewise_constant_distribution<double> m_distributionPDSB;
 
 	default_random_engine m_generator_MU1;
 	default_random_engine m_generator_MU2;
@@ -187,10 +213,10 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 	default_random_engine m_generator_MU5;
 
 	default_random_engine m_generator_MU;
-	piecewise_constant_distribution<double>m_distributionMU;
+	piecewise_constant_distribution<double> m_distributionMU;
 
     default_random_engine m_generatorBackground;
-    piecewise_constant_distribution<double>m_distributionBackground;
+    piecewise_constant_distribution<double> m_distributionBackground;
 
 	//DLTSimulationInput:
 	void *m_distributionLT1;
@@ -255,8 +281,7 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 	m_phsDistribution(phsDistribution),
 	m_setupInfo(setupeInfo),
 	m_pulseInfo(pulseInfo) {
-	m_sampleScaleFactor = 25000.0f / 1024.0f; //(15000/1024)=(x/m_setupInfo.numberOfCells)
-
+	
 	DLifeTime::DLTError error = NONE_ERROR;
 
     if ( m_setupInfo.sweep <= 10 ) {
@@ -269,12 +294,14 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 			error |= DLifeTime::DLTErrorType::NUMBER_OF_CELLS_INVALID;
     }
 
-    if ( m_pulseInfo.riseTime <= 0 ) {
+    if ( m_pulseInfo.pulseA.riseTime <= 0 
+		|| m_pulseInfo.pulseB.riseTime <= 0) {
         if ( callback ) 
 			error |= DLifeTime::DLTErrorType::PULSE_RISE_TIME_INVALID;
     }
 
-    if ( m_pulseInfo.pulseWidth <= 0 ) {
+    if ( m_pulseInfo.pulseA.pulseWidth <= 0 
+		|| m_pulseInfo.pulseB.pulseWidth <= 0) {
         if ( callback )
 			error |= DLifeTime::DLTErrorType::PULSE_WIDTH_INVALID;
     }
@@ -361,6 +388,9 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
     m_privatePtr.get()->m_distributionStopA  = normal_distribution<double>(m_phsDistribution.meanOfStopA, m_phsDistribution.stddevOfStopA);
     m_privatePtr.get()->m_distributionStopB  = normal_distribution<double>(m_phsDistribution.meanOfStopB, m_phsDistribution.stddevOfStopB);
 
+	//init of DLTPulse related random generators:
+	initPulseGenerator(&error, callback);
+
 	//init of DLTSimulationInput related random generators:
 	initLTGenerator(&error, callback);
 
@@ -370,10 +400,10 @@ DLifeTime::DLTPulseGenerator::DLTPulseGenerator(const DLifeTime::DLTSimulationIn
 	//generate background 120x of x(FWHM) on the t0-left side:
 	const double estimatedFWHM = 120*estimateFWHM();
 
-	const int leftSideBin = (estimatedFWHM / m_setupInfo.sweep)*((double)m_setupInfo.numberOfCells*m_sampleScaleFactor);
-	const int backgroundBinCount = ((double)m_setupInfo.numberOfCells)*m_sampleScaleFactor; 
+	const int leftSideBin = (estimatedFWHM / m_setupInfo.sweep)*((double)m_setupInfo.numberOfCells*(25000 / 1024)); 
+	const int backgroundBinCount = ((double)m_setupInfo.numberOfCells)*(25000 / 1024);
 	
-	const int startBin = -leftSideBin; //left of t0
+	const int startBin = -leftSideBin;       //left of t0
 	const int stopBin  = backgroundBinCount; //right of t0 -> sweep
 
 	const int backgroundFullBinCount = abs(startBin) + stopBin + 1;
@@ -618,88 +648,196 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
 	if (!m_simulationInput.isStartStopAlternating)
 		m_eventCounter = 1;
 
-    const double deeperSampleDepthFactor = ((double)m_setupInfo.numberOfCells*m_sampleScaleFactor); //(15000/1024)=(x/m_setupInfo.numberOfCells)
-    const double deeperSampleDepth		 = ((double)m_setupInfo.numberOfCells*deeperSampleDepthFactor);
-
     bool isCoincidence = false;
 	bool validLifetime = true;
+
     const double nextLT = nextLifeTime(&isCoincidence, &validLifetime); //next lifetime? (LTSelector)
 
 	if (!validLifetime)
 		return false;
 
-    if ( m_eventCounter%2 ) { //A (Start)-B (Stop) 
+	/* baseline jitter (V) */
+	const double baselineA = (m_pulseInfo.pulseA.baselineOffsetJitterInfoV.enabled ? m_privatePtr.get()->m_distributionPulseBaselineJitterA(m_privatePtr.get()->m_generatorPulseBaselineJitterA) : 0.0);
+	const double baselineB = (m_pulseInfo.pulseB.baselineOffsetJitterInfoV.enabled ? m_privatePtr.get()->m_distributionPulseBaselineJitterB(m_privatePtr.get()->m_generatorPulseBaselineJitterB) : 0.0);
+
+	const double overallMeasurementRange = 2.0*abs(m_pulseInfo.amplitude);
+	const double digiStepV = overallMeasurementRange / (pow(2, m_pulseInfo.digitizationInfo.digitizationDepth)); // [mV]
+
+	//A (Start)-B (Stop) 
+    if ( m_eventCounter%2 ) { 
         const double amplitudeInMVA = (!isCoincidence)?m_privatePtr.get()->m_distributionStartA(m_privatePtr.get()->m_generatorStartA):m_privatePtr.get()->m_distributionStopA(m_privatePtr.get()->m_generatorStopA);
         const double amplitudeInMVB = m_privatePtr.get()->m_distributionStopB(m_privatePtr.get()->m_generatorStopB);
 
 		const double start_t_in_ns = m_pulseInfo.delay + uncertaintyA();
         const double stop_t_in_ns  = nextLT - m_setupInfo.ATS + uncertaintyB() + m_pulseInfo.delay;
 
-        const int startCell = (start_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
-        const int stopCell  = (stop_t_in_ns/ m_setupInfo.sweep)*deeperSampleDepth;
-
-        const double timeIncrInNS = m_setupInfo.sweep/deeperSampleDepth;
+		const double timeIncrInNS = m_setupInfo.sweep / ((double)m_setupInfo.numberOfCells);
 
         //trigger OK? (AND-logic only)
+		const double levelA = amplitudeInMVA + baselineA;
+		const double levelB = amplitudeInMVB + baselineB;
+
         if ( m_pulseInfo.isPositiveSignalPolarity ) {
-            if ( !(triggerLevelA_in_milliVolt < amplitudeInMVA && triggerLevelA_in_milliVolt > 0.0f
-                   && triggerLevelB_in_milliVolt < amplitudeInMVB && triggerLevelB_in_milliVolt > 0.0f) )
+            if ( !(triggerLevelA_in_milliVolt < levelA && triggerLevelA_in_milliVolt > baselineA
+                   && triggerLevelB_in_milliVolt < levelB && triggerLevelB_in_milliVolt > baselineB) )
                 return false;
         }
         else {
-            if ( !(triggerLevelA_in_milliVolt > amplitudeInMVA && triggerLevelA_in_milliVolt < 0.0f
-                   && triggerLevelB_in_milliVolt > amplitudeInMVB && triggerLevelB_in_milliVolt < 0.0f) )
+            if ( !(triggerLevelA_in_milliVolt > levelA && triggerLevelA_in_milliVolt < baselineA
+                   && triggerLevelB_in_milliVolt > levelB && triggerLevelB_in_milliVolt < baselineB) )
                 return false;
         }
 
-        for ( int cell = 0 ; cell < deeperSampleDepth ; cell += deeperSampleDepthFactor ) {
+		for (double tP_in_ns = 0.0; tP_in_ns < m_setupInfo.sweep; tP_in_ns += timeIncrInNS) {
             DLTPointF pA, pB;
 
-            pA.setX(cell*timeIncrInNS);
-            pB.setX(cell*timeIncrInNS);
+			double tP_in_ns_A = tP_in_ns;
+			double tP_in_ns_B = tP_in_ns;
 
-            if ( cell <= startCell )
-                pA.setY(0.0f);
+			/* add non-linearity to time axis */
+			if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
+				tP_in_ns_A += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
+			}
+
+			if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
+				tP_in_ns_B += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
+			}
+
+			pA.setX(tP_in_ns_A);
+			pB.setX(tP_in_ns_B);
+
+            if ( tP_in_ns < start_t_in_ns ) {
+				double ampl = baselineA;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseA.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseA(m_privatePtr.get()->m_generatorPulseRndNoiseA);
+				}
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));						
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
+
+				pA.setY(ampl);
+			}
             else {
-                const double lnVal = log(((double)(cell-startCell)*timeIncrInNS)/m_pulseInfo.riseTime)/m_pulseInfo.pulseWidth;
+				const double tA = (tP_in_ns_A - start_t_in_ns);
 
-                double ampl = amplitudeInMVA*exp(-0.5f*(lnVal)*(lnVal));
+                const double lnVal = log(tA/m_pulseInfo.pulseA.riseTime)/m_pulseInfo.pulseA.pulseWidth;
+
+                double ampl = amplitudeInMVA*exp(-0.5f*(lnVal)*(lnVal)) + baselineA;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseA.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseA(m_privatePtr.get()->m_generatorPulseRndNoiseA);
+				}
 
                 if ( m_pulseInfo.isPositiveSignalPolarity ) {
-                    if ( ampl < 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl > m_pulseInfo.amplitude )
+                    if ( ampl > m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
                 else {
-                    if ( ampl > 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl < m_pulseInfo.amplitude )
+                    if ( ampl < m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
 
                 pA.setY(ampl);
             }
 
-            if ( cell <= stopCell )
-                pB.setY(0.0f);
-            else {
-                const double lnVal = log(((double)(cell-stopCell)*timeIncrInNS)/m_pulseInfo.riseTime)/m_pulseInfo.pulseWidth;
+            if ( tP_in_ns < stop_t_in_ns ) {
+				double ampl = baselineB;
 
-                double ampl = amplitudeInMVB*exp(-0.5f*(lnVal)*(lnVal));
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseB.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseB(m_privatePtr.get()->m_generatorPulseRndNoiseB);
+				}
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
+
+				pB.setY(ampl);
+			}
+            else {
+				const double tB = (tP_in_ns_B - stop_t_in_ns);
+
+                const double lnVal = log(tB/m_pulseInfo.pulseB.riseTime)/m_pulseInfo.pulseB.pulseWidth;
+
+                double ampl = amplitudeInMVB*exp(-0.5f*(lnVal)*(lnVal)) + baselineB;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseB.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseB(m_privatePtr.get()->m_generatorPulseRndNoiseB);
+				}
 
                 if ( m_pulseInfo.isPositiveSignalPolarity ) {
-                    if ( ampl < 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl > m_pulseInfo.amplitude )
+                    if ( ampl > m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
                 else {
-                    if ( ampl > 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl < m_pulseInfo.amplitude )
+                    if ( ampl < m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
 
                 pB.setY(ampl);
             }
@@ -708,78 +846,181 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
             pulseB->append(pB);
         }
     }
-    else { //B (Start)-A (Stop)
+	//B (Start)-A (Stop)
+    else { 
         const double amplitudeInMVB = (!isCoincidence)?m_privatePtr.get()->m_distributionStartB(m_privatePtr.get()->m_generatorStartB):m_privatePtr.get()->m_distributionStopB(m_privatePtr.get()->m_generatorStopB);
         const double amplitudeInMVA = m_privatePtr.get()->m_distributionStopA(m_privatePtr.get()->m_generatorStopA);
 
         const double start_t_in_ns = m_pulseInfo.delay + uncertaintyB();
         const double stop_t_in_ns  = nextLT + m_setupInfo.ATS + uncertaintyA() + m_pulseInfo.delay;
 
-        const int startCell = (start_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
-        const int stopCell  = (stop_t_in_ns/m_setupInfo.sweep)*deeperSampleDepth;
-
-        const double timeIncrInNS = m_setupInfo.sweep/deeperSampleDepth;
+		const double timeIncrInNS = m_setupInfo.sweep / ((double)m_setupInfo.numberOfCells);
 
         //trigger OK? (AND-logic only)
+		const double levelA = amplitudeInMVA + baselineA;
+		const double levelB = amplitudeInMVB + baselineB;
+
         if ( m_pulseInfo.isPositiveSignalPolarity ) {
-            if ( !(triggerLevelA_in_milliVolt < amplitudeInMVA && triggerLevelA_in_milliVolt > 0.0f
-                   && triggerLevelB_in_milliVolt < amplitudeInMVB && triggerLevelB_in_milliVolt > 0.0f) )
+            if ( !(triggerLevelA_in_milliVolt < amplitudeInMVA && triggerLevelA_in_milliVolt > baselineA
+                   && triggerLevelB_in_milliVolt < amplitudeInMVB && triggerLevelB_in_milliVolt > baselineB) )
                 return false;
         }
         else {
-            if ( !(triggerLevelA_in_milliVolt > amplitudeInMVA && triggerLevelA_in_milliVolt < 0.0f
-                   && triggerLevelB_in_milliVolt > amplitudeInMVB && triggerLevelB_in_milliVolt < 0.0f) )
+            if ( !(triggerLevelA_in_milliVolt > amplitudeInMVA && triggerLevelA_in_milliVolt < baselineA
+                   && triggerLevelB_in_milliVolt > amplitudeInMVB && triggerLevelB_in_milliVolt < baselineB) )
                 return false;
         }
 
-        for ( int cell = 0 ; cell < deeperSampleDepth ; cell += deeperSampleDepthFactor ) {
+        for ( double tP_in_ns = 0.0; tP_in_ns < m_setupInfo.sweep; tP_in_ns += timeIncrInNS ) {
             DLTPointF pA, pB;
 
-            pA.setX(cell*timeIncrInNS);
-            pB.setX(cell*timeIncrInNS);
+			double tP_in_ns_A = tP_in_ns;
+			double tP_in_ns_B = tP_in_ns;
 
-            if ( cell <= startCell )
-                pB.setY(0.0f);
+			/* add non-linearity to time axis */
+			if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
+				tP_in_ns_A += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
+			}
+
+			if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
+				tP_in_ns_B += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
+			}
+
+			pA.setX(tP_in_ns_A);
+			pB.setX(tP_in_ns_B);
+
+            if ( tP_in_ns < start_t_in_ns ) {
+				double ampl = baselineB;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseB.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseB(m_privatePtr.get()->m_generatorPulseRndNoiseB);
+				}
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
+
+				pB.setY(ampl);
+			}
             else {
-                const double lnVal = log(((double)(cell-startCell)*timeIncrInNS)/m_pulseInfo.riseTime)/m_pulseInfo.pulseWidth;
+				const double tB = (tP_in_ns_B - start_t_in_ns);
 
-                double ampl = amplitudeInMVB*exp(-0.5f*(lnVal)*(lnVal));
+                const double lnVal = log(tB / m_pulseInfo.pulseB.riseTime) / m_pulseInfo.pulseB.pulseWidth;
+
+                double ampl = amplitudeInMVB*exp(-0.5f*(lnVal)*(lnVal)) + baselineB;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseB.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseB(m_privatePtr.get()->m_generatorPulseRndNoiseB);
+				}
 
                 if ( m_pulseInfo.isPositiveSignalPolarity ) {
-                    if ( ampl < 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl > m_pulseInfo.amplitude )
+                    if ( ampl > m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
                 else {
-                    if ( ampl > 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl < m_pulseInfo.amplitude )
+                    if ( ampl < m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
 
                 pB.setY(ampl);
             }
 
-            if ( cell <= stopCell )
-                pA.setY(0.0f);
-            else {
-                const double lnVal = log(((double)(cell-stopCell)*timeIncrInNS)/m_pulseInfo.riseTime)/m_pulseInfo.pulseWidth;
+			if ( tP_in_ns < stop_t_in_ns ) {
+				double ampl = baselineA;
 
-                double ampl = amplitudeInMVA*exp(-0.5f*(lnVal)*(lnVal));
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseA.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseA(m_privatePtr.get()->m_generatorPulseRndNoiseA);
+				}
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
+
+				pA.setY(ampl);
+			}
+            else {
+				const double tA = (tP_in_ns_A - stop_t_in_ns);
+
+                const double lnVal = log(tA/m_pulseInfo.pulseA.riseTime)/m_pulseInfo.pulseA.pulseWidth;
+
+                double ampl = amplitudeInMVA*exp(-0.5f*(lnVal)*(lnVal)) + baselineA;
+
+				/* add noise + baseline jitter (V) */
+				if (m_pulseInfo.pulseA.randomNoiseInfoV.enabled) {
+					ampl += m_privatePtr.get()->m_distributionPulseRndNoiseA(m_privatePtr.get()->m_generatorPulseRndNoiseA);
+				}
 
                 if ( m_pulseInfo.isPositiveSignalPolarity ) {
-                    if ( ampl < 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl > m_pulseInfo.amplitude )
+                    if ( ampl > m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
                 else {
-                    if ( ampl > 0.0f )
-                        ampl = 0.0f;
-                    else if ( ampl < m_pulseInfo.amplitude )
+                    if ( ampl < m_pulseInfo.amplitude )
                         ampl = m_pulseInfo.amplitude;
                 }
+
+				/* consider digitization depth */
+				if (m_pulseInfo.digitizationInfo.enabled) {
+					double voltScaled = 0.0;
+					int ratio = 1;
+
+					if (ampl < 0.0) {
+						voltScaled = overallMeasurementRange*0.5 - abs(ampl);
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+					else {
+						voltScaled = overallMeasurementRange*0.5 + ampl;
+						ratio = (int)(round(voltScaled / digiStepV));
+					}
+
+					ampl = (ratio*digiStepV) - overallMeasurementRange*0.5;
+				}
 
                 pA.setY(ampl);
             }
@@ -793,6 +1034,195 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
 		m_eventCounter ++;
 
     return true;
+}
+
+void DLifeTime::DLTPulseGenerator::initPulseGenerator(DLifeTime::DLTError *error, DLifeTime::DLTCallback *callback)
+{
+	/* voltage domain */
+
+	if (m_pulseInfo.digitizationInfo.enabled) {
+		if (m_pulseInfo.digitizationInfo.digitizationDepth <= 2) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_DIGITIZATION_DEPTH;
+		}
+	}
+
+	/* init V - generators - A */
+	m_privatePtr.get()->m_generatorPulseBaselineJitterA.seed(rand());
+	m_privatePtr.get()->m_generatorPulseRndNoiseA.seed(rand());
+
+	/* baseline jitter - A */
+	if (m_pulseInfo.pulseA.baselineOffsetJitterInfoV.enabled) {
+		if (m_pulseInfo.isPositiveSignalPolarity
+			&& (m_pulseInfo.pulseA.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter >= m_pulseInfo.amplitude)) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+		else if (!m_pulseInfo.isPositiveSignalPolarity
+			&& (m_pulseInfo.pulseA.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter <= m_pulseInfo.amplitude)) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+
+		if (m_pulseInfo.pulseA.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseBaselineJitterA = normal_distribution<double>(m_pulseInfo.pulseA.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter, m_pulseInfo.pulseA.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter);		
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseBaselineJitterA = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* random noise - A */
+	if (m_pulseInfo.pulseA.randomNoiseInfoV.enabled) {
+		if (m_pulseInfo.pulseA.randomNoiseInfoV.rndNoise < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_RND_NOISE;
+		}
+
+		m_privatePtr.get()->m_distributionPulseRndNoiseA = normal_distribution<double>(0.0, m_pulseInfo.pulseA.randomNoiseInfoV.rndNoise);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseRndNoiseA = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* init V - generators - B */
+	m_privatePtr.get()->m_generatorPulseBaselineJitterB.seed(rand());
+	m_privatePtr.get()->m_generatorPulseRndNoiseB.seed(rand());
+
+	/* baseline jitter - B */
+	if (m_pulseInfo.pulseB.baselineOffsetJitterInfoV.enabled) {
+		if (m_pulseInfo.isPositiveSignalPolarity
+			&& (m_pulseInfo.pulseB.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter >= m_pulseInfo.amplitude)) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+		else if (!m_pulseInfo.isPositiveSignalPolarity
+			&& (m_pulseInfo.pulseB.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter <= m_pulseInfo.amplitude)) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+
+		if (m_pulseInfo.pulseB.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_BASELINE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseBaselineJitterB = normal_distribution<double>(m_pulseInfo.pulseB.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter, m_pulseInfo.pulseB.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseBaselineJitterB = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* random noise - B */
+	if (m_pulseInfo.pulseB.randomNoiseInfoV.enabled) {
+		if (m_pulseInfo.pulseB.randomNoiseInfoV.rndNoise < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_VOLTAGE_RND_NOISE;
+		}
+
+		m_privatePtr.get()->m_distributionPulseRndNoiseB = normal_distribution<double>(0.0, m_pulseInfo.pulseB.randomNoiseInfoV.rndNoise);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseRndNoiseB = normal_distribution<double>(0.0, 0.0);
+	}
+
+
+	/* time domain - non-linearity */
+
+	/* init T - generators - A */
+	m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA.seed(rand());
+	m_privatePtr.get()->m_generatorPulseRndApertureJitterA.seed(rand());
+
+	/* fixed pattern aperture jitter - A */
+	if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
+		const double incrNanoSec = (m_setupInfo.sweep / (double)m_setupInfo.numberOfCells);
+
+		if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter > 0.25*incrNanoSec
+			|| m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER;
+		}
+
+		if ((m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter + m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter) > 0.25*incrNanoSec) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA = normal_distribution<double>(0.0, m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* random aperture jitter - A */
+	if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
+		const double incrNanoSec = (m_setupInfo.sweep / (double)m_setupInfo.numberOfCells);
+
+		if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter > 0.25*incrNanoSec
+			|| m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER;
+		}
+
+		if ((m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter + m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter) > 0.25*incrNanoSec) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseRndApertureJitterA = normal_distribution<double>(0.0, m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseRndApertureJitterA = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* init T - generators - B */
+	m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB.seed(rand());
+	m_privatePtr.get()->m_generatorPulseRndApertureJitterB.seed(rand());
+
+	/* fixed pattern aperture jitter - B */
+	if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
+		const double incrNanoSec = (m_setupInfo.sweep / (double)m_setupInfo.numberOfCells);
+
+		if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter > 0.25*incrNanoSec
+			|| m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER;
+		}
+
+		if ((m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter + m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter) > 0.25*incrNanoSec) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB = normal_distribution<double>(0.0, m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* random aperture jitter - B */
+	if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
+		const double incrNanoSec = (m_setupInfo.sweep / (double)m_setupInfo.numberOfCells);
+
+		if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter > 0.25*incrNanoSec
+			|| m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter < 0.0) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER;
+		}
+
+		if ((m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter + m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter) > 0.25*incrNanoSec) {
+			if (callback && error)
+				*error |= DLifeTime::DLTErrorType::INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER;
+		}
+
+		m_privatePtr.get()->m_distributionPulseRndApertureJitterB = normal_distribution<double>(0.0, m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter);
+	}
+	else {
+		m_privatePtr.get()->m_distributionPulseRndApertureJitterB = normal_distribution<double>(0.0, 0.0);
+	}	
 }
 
 void DLifeTime::DLTPulseGenerator::initLTGenerator(DLifeTime::DLTError *error, DLifeTime::DLTCallback *callback)
@@ -2497,14 +2927,13 @@ DLifeTime::DLTPointF DLifeTime::DLTPulseF::at(int index) const {
 	return m_vector->at(index);
 }
 
-/** The class DLT_C_WRAPPER is used as singleton-pattern class to access from Ansi C-functions:
-**	This provides the access to other programming languages such as matlab (mex-compiler) or python (ctypes-library).
+/** The class DLT_C_WRAPPER is used as singleton pattern to access from Ansi C functions.
+**	Thus, an interface to different programming languages such as matlab (mex-compiler) or
+**  python (ctypes-library) is provided.
 **
-**	An example how to access the class DLTPulseGenerator via class DLT_C_WRAPPER is given in python:
-**
-**  - pyDLTPulseGenerator -
+**	An example how to use class DLTPulseGenerator in combination with class DLT_C_WRAPPER
+**  is given in python: pyDLTPulseGenerator
 **/
-
 DLT_C_WRAPPER *__sharedAccessPtr = nullptr;
 
 DLT_C_WRAPPER::DLT_C_WRAPPER() {
@@ -2803,12 +3232,59 @@ void setNumberOfCells(int numberOfCells) {
 	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.numberOfCells = numberOfCells;
 }
 
-void setRiseTime(double riseTime_in_nanoSeconds) {
-	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.riseTime = riseTime_in_nanoSeconds;
+void setRiseTimeA(double riseTime_in_nanoSeconds) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.riseTime = riseTime_in_nanoSeconds;
 }
 
-void setPulseWidth(double pulseWidth) {
-	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseWidth = pulseWidth;
+void setPulseWidthA(double pulseWidth) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.pulseWidth = pulseWidth;
+}
+
+void setPulseBaselineOffsetJitterA(bool enabled, double meanOfBaselineJitter_in_mV, double uncertaintyOfBaselineJitter_in_mV) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.baselineOffsetJitterInfoV.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter = meanOfBaselineJitter_in_mV;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter = uncertaintyOfBaselineJitter_in_mV;
+}
+
+void setPulseRandomNoiseA(bool enabled, double uncertainty_in_mV) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.randomNoiseInfoV.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.randomNoiseInfoV.rndNoise = uncertainty_in_mV;
+}
+
+void setPulseTimeAxisNonlinearityA(bool enabled, double uncertainty_fixedPatternApertureJitter_in_ns, double uncertainty_randomApertureJitter_in_ns) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.fixedPatternApertureJitter = uncertainty_fixedPatternApertureJitter_in_ns;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.rndApertureJitter = uncertainty_randomApertureJitter_in_ns;
+}
+
+void setRiseTimeB(double riseTime_in_nanoSeconds) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.riseTime = riseTime_in_nanoSeconds;
+}
+
+void setPulseWidthB(double pulseWidth) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.pulseWidth = pulseWidth;
+}
+
+void setPulseBaselineOffsetJitterB(bool enabled, double meanOfBaselineJitter_in_mV, double uncertaintyOfBaselineJitter_in_mV) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.baselineOffsetJitterInfoV.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.baselineOffsetJitterInfoV.meanOfBaselineOffsetJitter = meanOfBaselineJitter_in_mV;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.baselineOffsetJitterInfoV.stddevOfBaselineOffsetJitter = uncertaintyOfBaselineJitter_in_mV;
+}
+
+void setPulseRandomNoiseB(bool enabled, double uncertainty_in_mV) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.randomNoiseInfoV.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.randomNoiseInfoV.rndNoise = uncertainty_in_mV;
+}
+
+void setPulseTimeAxisNonlinearityB(bool enabled, double uncertainty_fixedPatternApertureJitter_in_ns, double uncertainty_randomApertureJitter_in_ns) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.fixedPatternApertureJitter = uncertainty_fixedPatternApertureJitter_in_ns;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.rndApertureJitter = uncertainty_randomApertureJitter_in_ns;
+}
+
+void setDigitizationInfo(bool enabled, unsigned int digitizationDepth_in_bit) {
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.digitizationInfo.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_pulseInfo.digitizationInfo.digitizationDepth = digitizationDepth_in_bit;
 }
 
 void setDelay(double delay_in_nanoSeconds) {

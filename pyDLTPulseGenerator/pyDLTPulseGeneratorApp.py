@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017-2019 Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -44,8 +44,8 @@ dpg.__information__()
 dpg.__licence__()
 
 #setup your Trigger-Value [mV]:
-triggerA = 50 #[mV]
-triggerB = 50 #[mV]
+triggerA = -25 #[mV]
+triggerB = -25 #[mV]
 
 #define input:
 lt          = dpg.DLTSimulationInput()
@@ -69,23 +69,30 @@ pulseGen    = dpg.DLTPulseGenerator(phs,
                                     PATH_TO_LIBRARY)
 
 # enum DLTPULSEGENERATOR_EXPORT DLTErrorType : DLTError
-    #NONE_ERROR                          = 0x00000000,
-    #NO_LIFETIMES_TO_SIMULATE            = 0x00000001,
-    #SWEEP_INVALID                       = 0x00000002,
-    #NUMBER_OF_CELLS_INVALID             = 0x00000004,
-    #PDS_UNCERTAINTY_INVALID             = 0x00000008,
-    #MU_UNCERTAINTY_INVALID              = 0x00000010,
-    #PULSE_RISE_TIME_INVALID             = 0x00000020,
-    #PULSE_WIDTH_INVALID                 = 0x00000040,
-    #DELAY_INVALID                       = 0x00000080,
-    #DELAY_LARGER_THAN_SWEEP             = 0x00000100,
-    #INTENSITY_OF_LIFETIME_BELOW_ZERO    = 0x00000200,
-    #INTENSITY_OF_BKGRD_BELOW_ZERO       = 0x00000400,
-    #INTENSITY_OF_PROMT_BELOW_ZERO       = 0x00000800,
-    #INVALID_SUM_OF_WEIGTHS              = 0x00001000,
-    #AMPLITUDE_AND_PULSE_POLARITY_MISFIT = 0x00002000,
-    #AMPLITUDE_AND_PHS_MISFIT            = 0x00004000,
-    #INVALID_LIFETIME_DISTRIBUTION_INPUT = 0x00008000,
+    #NONE_ERROR                                      = 0x00000000,
+    #NO_LIFETIMES_TO_SIMULATE                        = 0x00000001,
+    #SWEEP_INVALID                                   = 0x00000002,
+    #NUMBER_OF_CELLS_INVALID                         = 0x00000004,
+    #PDS_UNCERTAINTY_INVALID                         = 0x00000008,
+    #MU_UNCERTAINTY_INVALID                          = 0x00000010,
+    #PULSE_RISE_TIME_INVALID                         = 0x00000020,
+    #PULSE_WIDTH_INVALID                             = 0x00000040,
+    #DELAY_INVALID                                   = 0x00000080,
+    #DELAY_LARGER_THAN_SWEEP                         = 0x00000100,
+    #INTENSITY_OF_LIFETIME_BELOW_ZERO                = 0x00000200,
+    #INTENSITY_OF_BKGRD_BELOW_ZERO                   = 0x00000400,
+    #INTENSITY_OF_PROMT_BELOW_ZERO                   = 0x00000800,
+    #INVALID_SUM_OF_WEIGTHS                          = 0x00001000,
+    #AMPLITUDE_AND_PULSE_POLARITY_MISFIT             = 0x00002000,
+    #AMPLITUDE_AND_PHS_MISFIT                        = 0x00004000,
+    #INVALID_LIFETIME_DISTRIBUTION_INPUT             = 0x00008000,
+    #INVALID_SUM_OF_PDS_IRF_INTENSITIES              = 0x00010000,
+    #INVALID_SUM_OF_MU_IRF_INTENSITIES               = 0x00020000,
+    #INVALID_VOLTAGE_BASELINE_JITTER                 = 0x00040000,
+    #INVALID_VOLTAGE_RND_NOISE                       = 0x00080000,
+    #INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER = 0x00100000,
+    #INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER   = 0x00200000,
+    #INVALID_DIGITIZATION_DEPTH                      = 0x00400000
 #};
 
 print("DLTPulseGenerator initialized with error-code:");
@@ -139,6 +146,8 @@ if pulseGen.getError() != 0:
     if pulseGen.getError() & 40768:
         print("- invalid input for lifetime distribution(s).");
 
+    # ... and so on ...
+
     quit(); #kill process on error!
 else:
     print("- succeess.\n");
@@ -166,8 +175,12 @@ phsA_x = [0]*numberOfCells
 phsB_x = [0]*numberOfCells
 
 for i in range(0, (numberOfCells-1)):
-    phsA_x[i] = (float(i)/float((numberOfCells-1)))*maxAmplitude
-    phsB_x[i] = (float(i)/float((numberOfCells-1)))*maxAmplitude
+    if pulseInfo.m_amplitude_in_milliVolt > 0:
+        phsA_x[i] = (float(i)/float((numberOfCells-1)))*maxAmplitude
+        phsB_x[i] = (float(i)/float((numberOfCells-1)))*maxAmplitude
+    else:
+        phsA_x[i] = (float(i)/float((numberOfCells-1)))*(-maxAmplitude)
+        phsB_x[i] = (float(i)/float((numberOfCells-1)))*(-maxAmplitude)
     
 pulseA = dpg.DLTPulseF() #pulse of detector A
 pulseB = dpg.DLTPulseF() #pulse of detector B
@@ -180,11 +193,18 @@ def updatePlotView(i):
         axe.plot(pulseA.getTime(), pulseA.getVoltage(), 'r--', pulseB.getTime(), pulseB.getVoltage(), 'b--')
 
         axes.set_xlim([0, sweep_in_ns])
-        axes.set_ylim([-amplitudeA, amplitudeA])
-
         
-        phsAIndex = (pulseA.getMaximumVoltage()/maxAmplitude)*numberOfCells
-        phsBIndex = (pulseB.getMaximumVoltage()/maxAmplitude)*numberOfCells
+        if pulseInfo.m_amplitude_in_milliVolt > 0:
+            axes.set_ylim([-amplitudeA, amplitudeA])
+        else:
+            axes.set_ylim([amplitudeA, -amplitudeA])
+
+        if pulseInfo.m_amplitude_in_milliVolt > 0:
+            phsAIndex = (pulseA.getMaximumVoltage()/maxAmplitude)*numberOfCells
+            phsBIndex = (pulseB.getMaximumVoltage()/maxAmplitude)*numberOfCells
+        else:
+            phsAIndex = (pulseA.getMinimumVoltage()/(maxAmplitude))*numberOfCells
+            phsBIndex = (pulseB.getMinimumVoltage()/(maxAmplitude))*numberOfCells
 
         if (phsAIndex <= (numberOfCells-1) and phsAIndex >= 0) and (phsBIndex <= (numberOfCells-1) and phsBIndex >= 0):
             phsA[int(phsAIndex)] = phsA[int(phsAIndex)] + 1
@@ -194,12 +214,13 @@ def updatePlotView(i):
         
         axePHS.plot(phsA_x, phsA, 'r--')
         axePHS.plot(phsB_x, phsB, 'b--')
-        
-        axesPHS.set_xlim([0, maxAmplitude])
-        axesPHS.set_ylim([0, max(max(phsA), max(phsB))])
-    #else:
-        #This happens only if the PHS-Value is lower than the Trigger-Value at the Channel:
 
+        if pulseInfo.m_amplitude_in_milliVolt > 0:
+            axesPHS.set_xlim([0, maxAmplitude])
+        else:
+            axesPHS.set_xlim([0, -maxAmplitude])
+        
+        axesPHS.set_ylim([0, max(max(phsA), max(phsB))])
     
 a = animation.FuncAnimation(fig, updatePlotView, frames = 100, repeat = True)
 b = animation.FuncAnimation(figPHS, updatePlotView, frames = 100, repeat = True)

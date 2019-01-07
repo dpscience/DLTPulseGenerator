@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017-2019 Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -35,9 +35,9 @@ import ctypes
 from ctypes import cdll
 
 def __information__():
-    print("#****************** pyDLTPulseGenerator 1.2 (05.06.2017) *******************")
+    print("#****************** pyDLTPulseGenerator 1.3 (07.01.2019) *******************")
     print("#**")
-    print("#** Copyright (C) 2017, 2018 Danny Petschke")
+    print("#** Copyright (C) 2017-2019 Danny Petschke")
     print("#**")
     print("#** Contact: danny.petschke@uni-wuerzburg.de")
     print("#**")
@@ -46,7 +46,7 @@ def __information__():
 def __licence__():
     print("#*************************************************************************************************")
     print("#**")
-    print("#** Copyright (c) 2017, 2018 Danny Petschke. All rights reserved.")
+    print("#** Copyright (c) 2017-2019 Danny Petschke. All rights reserved.")
     print("#**")
     print("#** Redistribution and use in source and binary forms, with or without modification,") 
     print("#** are permitted provided that the following conditions are met:")
@@ -162,17 +162,24 @@ class DLTPulseF:
             
 
 class DLTPHS:
-    m_meanOfStart_A_in_milliVolt = 190.0
-    m_meanOfStop_A_in_milliVolt = 90.0
-    m_stddevOfStart_A_in_milliVolt = 150.0
-    m_stddevOfStop_A_in_milliVolt = 25.0
+    m_meanOfStart_A_in_milliVolt   = -190.0
+    m_meanOfStop_A_in_milliVolt    = -90.0
+    m_stddevOfStart_A_in_milliVolt = -150.0
+    m_stddevOfStop_A_in_milliVolt  = -25.0
 
-    m_meanOfStart_B_in_milliVolt = 190.0
-    m_meanOfStop_B_in_milliVolt = 90.0
-    m_stddevOfStart_B_in_milliVolt = 150.0
-    m_stddevOfStop_B_in_milliVolt = 25.0
+    m_meanOfStart_B_in_milliVolt   = -190.0
+    m_meanOfStop_B_in_milliVolt    = -90.0
+    m_stddevOfStart_B_in_milliVolt = -150.0
+    m_stddevOfStop_B_in_milliVolt  = -25.0
 
-    def __init__(self, meanOfStartA = 190.0, stddevOfStartA = 150.0, meanOfStopA = 90.0, stddevOfStopA = 25.0, meanOfStartB = 190.0, stddevOfStartB = 150.0, meanOfStopB = 90.0, stddevOfStopB = 25.0):
+    def __init__(self,   meanOfStartA   = -190.0,
+                         stddevOfStartA = -150.0,
+                         meanOfStopA    = -90.0,
+                         stddevOfStopA  = -25.0,
+                         meanOfStartB   = -190.0,
+                         stddevOfStartB = -150.0,
+                         meanOfStopB    = -90.0,
+                         stddevOfStopB  = -25.0):
         self.m_meanOfStart_A_in_milliVolt = meanOfStartA
         self.m_meanOfStop_A_in_milliVolt = meanOfStopA
         self.m_stddevOfStart_A_in_milliVolt = stddevOfStartA
@@ -212,8 +219,8 @@ class DLTSimulationInput:
     m_lt5_activated = False
 
     m_tau1_in_nanoSeconds = 0.160
-    m_tau2_in_nanoSeconds = 0.420
-    m_tau3_in_nanoSeconds = 3.2
+    m_tau2_in_nanoSeconds = 0.385
+    m_tau3_in_nanoSeconds = 1.2
     m_tau4_in_nanoSeconds = 0.0
     m_tau5_in_nanoSeconds = 0.0
 
@@ -235,8 +242,8 @@ class DLTSimulationInput:
     m_isStartStopAlternating = True;
 
     def __init__(self, lt1_activated = True, tau1_in_nanoSeconds = 0.160, intensity1 = 0.25, distrInfo1 = DLTDistributionInfo(),
-               lt2_activated = True, tau2_in_nanoSeconds = 0.420, intensity2 = 0.25, distrInfo2 = DLTDistributionInfo(),
-               lt3_activated = True, tau3_in_nanoSeconds = 3.2, intensity3 = 0.5, distrInfo3 = DLTDistributionInfo(),
+               lt2_activated = True, tau2_in_nanoSeconds = 0.385, intensity2 = 0.25, distrInfo2 = DLTDistributionInfo(),
+               lt3_activated = True, tau3_in_nanoSeconds = 1.2, intensity3 = 0.5, distrInfo3 = DLTDistributionInfo(),
                lt4_activated = False, tau4_in_nanoSeconds = 0.0, intensity4 = 0.0, distrInfo4 = DLTDistributionInfo(),
                lt5_activated = False, tau5_in_nanoSeconds = 0.0, intensity5 = 0.0, distrInfo5 = DLTDistributionInfo(),
                intensityOfPromtOccurrance = 0.2,
@@ -359,25 +366,88 @@ class DLTSetup:
         self.m_sweep_in_nanoSeconds = sweep_in_nanoSeconds
         self.m_numberOfCells = numberOfCells
 
-class DLTPulse:
-    m_riseTime_in_nanoSeconds = 5.0
-    m_pulseWidth_in_nanoSeconds = 0.165
-    m_delay_in_nanoSeconds = 65.0
+class DLTPulseTimeAxisNonlinearityInfo:
+    m_enabled = False
+    m_fixedPatternApertureJitter = 0.0
+    m_rndApertureJitter = 0.0
 
-    m_amplitude_in_milliVolt = 500.0
-    m_isPositiveSignalPolarity = True
+    def __init__(self, enabled = False, fixedPatternApertureJitter = 0.0, rndApertureJitter = 0.0):
+        self.m_enabled = enabled
+        self.m_fixedPatternApertureJitter = fixedPatternApertureJitter
+        self.m_rndApertureJitter = rndApertureJitter
+
+class DLTPulseRandomNoiseInfo:
+    m_enabled = False
+    m_rndNoise = 0.0
+    
+    def __init__(self, enabled = False, rndNoise = 0.0):
+        self.m_enabled = enabled
+        self.m_rndNoise = rndNoise
         
-    def __init__(self, riseTime_in_nanoSeconds = 5.0,
-                 pulseWidth_in_nanoSeconds = 0.165,
-                 delay_in_nanoSeconds = 65.0,
-                 amplitude_in_milliVolt = 500.0,
-                 isPositiveSignalPolarity = True):
+class DLTPulseBaselineOffsetJitterInfo:
+    m_enabled = False
+    m_meanOfBaselineOffsetJitter = 0.0
+    m_stddevOfBaselineOffsetJitter = 0.0
+
+    def __init__(self, enabled = False, meanOfBaselineOffsetJitter = 0.0, stddevOfBaselineOffsetJitter = 0.0):
+        self.m_enabled = enabled
+        self.m_meanOfBaselineOffsetJitter = meanOfBaselineOffsetJitter
+        self.m_stddevOfBaselineOffsetJitter = stddevOfBaselineOffsetJitter
+
+class DLTPulseInfo:
+    m_riseTime_in_nanoseconds = 0.0
+    m_pulseWidth_in_nanoseconds = 0.0
+
+    m_baselineOffsetJitterInfo = DLTPulseBaselineOffsetJitterInfo()
+    m_randomNoiseInfo          = DLTPulseRandomNoiseInfo()
+    m_timeAxisNonlinearityInfo = DLTPulseTimeAxisNonlinearityInfo()
+    
+    def __init__(self, riseTime_in_nanoSeconds   = 5.0,
+                       pulseWidth_in_nanoSeconds = 0.165,
+                       baselineOffsetJitterInfo  = DLTPulseBaselineOffsetJitterInfo(True, 0.0, 5.0),
+                       randomNoiseInfo           = DLTPulseRandomNoiseInfo(True, 0.35),
+                       timeAxisNonlinearityInfo  = DLTPulseTimeAxisNonlinearityInfo(True, 0.005, 0.001)):
         self.m_riseTime_in_nanoSeconds = riseTime_in_nanoSeconds
         self.m_pulseWidth_in_nanoSeconds = pulseWidth_in_nanoSeconds
+        self.m_baselineOffsetJitterInfo = baselineOffsetJitterInfo
+        self.m_randomNoiseInfo = randomNoiseInfo
+        self.m_timeAxisNonlinearityInfo = timeAxisNonlinearityInfo
+
+class DLTPulseDigitizationInfo:
+    m_enabled = False
+    m_digitizationDepth = 0
+    
+    def __init__(self, enabled = False, digitizationDepth = 14):
+        self.m_enabled           = enabled
+        self.m_digitizationDepth = digitizationDepth
+
+class DLTPulse:
+    m_pulseInfoA = DLTPulseInfo()
+    m_pulseInfoB = DLTPulseInfo()
+
+    m_digitizationInfo = DLTPulseDigitizationInfo(True, 14)
+    
+    m_delay_in_nanoSeconds = 65.0
+
+    m_amplitude_in_milliVolt = -500.0
+    m_isPositiveSignalPolarity = False
+        
+    def __init__(self, pulseInfoA               = DLTPulseInfo(),
+                       pulseInfoB               = DLTPulseInfo(),
+                       digitizationInfo         = DLTPulseDigitizationInfo(True, 14),
+                       delay_in_nanoSeconds     = 65.0,
+                       amplitude_in_milliVolt   = -500.0,
+                       isPositiveSignalPolarity = False):
         self.m_delay_in_nanoSeconds = delay_in_nanoSeconds
 
         self.m_amplitude_in_milliVolt = amplitude_in_milliVolt
         self.m_isPositiveSignalPolarity = isPositiveSignalPolarity
+
+        self.m_pulseInfoA = pulseInfoA
+        self.m_pulseInfoB = pulseInfoB
+
+        self.m_digitizationInfo = digitizationInfo
+        
                  
 class DLTPulseGenerator:
     __dllPtr = 0
@@ -553,8 +623,31 @@ class DLTPulseGenerator:
         self.__dllPtr.setNumberOfCells(ctypes.c_int(dLTSetupInfo.m_numberOfCells))
 
         #DLTPulse:
-        self.__dllPtr.setRiseTime(ctypes.c_double(dLTPulseInfo.m_riseTime_in_nanoSeconds))
-        self.__dllPtr.setPulseWidth(ctypes.c_double(dLTPulseInfo.m_pulseWidth_in_nanoSeconds))
+        self.__dllPtr.setRiseTimeA(ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_riseTime_in_nanoSeconds))
+        self.__dllPtr.setPulseWidthA(ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_pulseWidth_in_nanoSeconds))
+        self.__dllPtr.setPulseBaselineOffsetJitterA(ctypes.c_bool(dLTPulseInfo.m_pulseInfoA.m_baselineOffsetJitterInfo.m_enabled),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_baselineOffsetJitterInfo.m_meanOfBaselineOffsetJitter),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_baselineOffsetJitterInfo.m_stddevOfBaselineOffsetJitter))
+        self.__dllPtr.setPulseRandomNoiseA(ctypes.c_bool(dLTPulseInfo.m_pulseInfoA.m_randomNoiseInfo.m_enabled),
+                                           ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_randomNoiseInfo.m_rndNoise))
+        self.__dllPtr.setPulseTimeAxisNonlinearityA(ctypes.c_bool(dLTPulseInfo.m_pulseInfoA.m_timeAxisNonlinearityInfo.m_enabled),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_timeAxisNonlinearityInfo.m_fixedPatternApertureJitter),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_timeAxisNonlinearityInfo.m_rndApertureJitter))
+
+        self.__dllPtr.setRiseTimeB(ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_riseTime_in_nanoSeconds))
+        self.__dllPtr.setPulseWidthB(ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_pulseWidth_in_nanoSeconds))
+        self.__dllPtr.setPulseBaselineOffsetJitterB(ctypes.c_bool(dLTPulseInfo.m_pulseInfoB.m_baselineOffsetJitterInfo.m_enabled),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_baselineOffsetJitterInfo.m_meanOfBaselineOffsetJitter),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_baselineOffsetJitterInfo.m_stddevOfBaselineOffsetJitter))
+        self.__dllPtr.setPulseRandomNoiseB(ctypes.c_bool(dLTPulseInfo.m_pulseInfoB.m_randomNoiseInfo.m_enabled),
+                                           ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_randomNoiseInfo.m_rndNoise))
+        self.__dllPtr.setPulseTimeAxisNonlinearityB(ctypes.c_bool(dLTPulseInfo.m_pulseInfoB.m_timeAxisNonlinearityInfo.m_enabled),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_timeAxisNonlinearityInfo.m_fixedPatternApertureJitter),
+                                                    ctypes.c_double(dLTPulseInfo.m_pulseInfoB.m_timeAxisNonlinearityInfo.m_rndApertureJitter))
+
+        self.__dllPtr.setDigitizationInfo(ctypes.c_bool(dLTPulseInfo.m_digitizationInfo.m_enabled),
+                                          ctypes.c_int(dLTPulseInfo.m_digitizationInfo.m_digitizationDepth))
+        
         self.__dllPtr.setDelay(ctypes.c_double(dLTPulseInfo.m_delay_in_nanoSeconds))
         self.__dllPtr.setAmplitude(ctypes.c_double(dLTPulseInfo.m_amplitude_in_milliVolt))
         self.__dllPtr.setUsingPositiveSignalPolarity(ctypes.c_bool(dLTPulseInfo.m_isPositiveSignalPolarity))
