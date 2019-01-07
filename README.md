@@ -5,7 +5,7 @@ Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All ri
 # Introduction
 
 The quantitative analysis of lifetime spectra relevant in both life and materials sciences presents one of the ill-posed inverse problems and leads to the most stringent requirements on the hardware specifications and analysis algorithms.<br><br>
-<b>DLTPulseGenerator is written in native C++ 11</b> (ISO/IEC 14882:2011) and provides the simulation of (e.g. positron or fluorescence) lifetime spectra according to the measurement setup: i.e. the kind of detectors (photomultipliers (PMT) or(avalanche) diodes) and the acquisition hardware (mostly the combination of ADC and FPGA). 
+<b>DLTPulseGenerator is written in native C++ 11</b> (ISO/IEC 14882:2011) and provides the simulation of (e.g. positron or fluorescence) lifetime spectra according to the measurement setup: i.e. the kind of detectors (photomultipliers (PMT) or (avalanche) diodes) and the acquisition hardware (mostly the combination of ADC and FPGA). 
 The simulation is based on pairs of non-TTL detector output pulses which require the constant fraction principle for the determination of the exact timing signal.<br><br>
 
 DLTPulseGenerator library provides the compilation as <i>static</i> or <i>linked</i> library to make it easily accessible from other programming languages such as ...<br>
@@ -81,8 +81,7 @@ Errors can be handled by inheriting from <i>class DLTPulseGenerator</i> using th
 
 # Example using python
 
-A <b>library wrapper</b> in <i>python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) by calling the functions of <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)) is provided.<br>
-[pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls functions from the library (wrapper) [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py). The generated pulse pairs and the pulse height spectrum are displayed for demonstration purposes.<br>
+A <b>library wrapper</b> in <i>python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) by calling the functions of <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)) is provided. [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls functions from the library (wrapper) [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py). The generated pulse pairs and the pulse height spectrum are displayed for demonstration purposes.<br>
 
 #### requirements:
 - [ctypes](https://docs.python.org/3/library/ctypes.html) 
