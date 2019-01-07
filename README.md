@@ -30,15 +30,12 @@ This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/t
 
 This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper (v1.2) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.06.003)</b> and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
 
-<<<<<<< HEAD
 ## DLTPulseGenerator v1.3 (not officially released yet)
 
 This version provides the simulation of additional hardware influences such as baseline offset jitter, random noise, time axis nonlinearity, fixed and random pattern aperture jitter on the time axis and the digitization depth [bit] of the ADC.
 
-note: This version isn't officially released yet but can be tested using DDRS4PALS v1.08 (dpscience-local repo).
+note: This version isn't officially released yet but can be tested using <b>DDRS4PALS v1.08</b> (dpscience-local repo).
 
-=======
->>>>>>> 15d30e3d12c2ec768aa39c3d8ab66cb79ac86744
 ## Applications using DLTPulseGenerator library
 
 <b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
@@ -98,11 +95,7 @@ A <b>library wrapper</b> in <i>python</i> ([pyDLTPulseGenerator.py](https://gith
 
 # License (BSD-3-Clause)
 
-<<<<<<< HEAD
 Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
-=======
-Copyright (c) 2016-2018 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
->>>>>>> 15d30e3d12c2ec768aa39c3d8ab66cb79ac86744
 
 Redistribution and use in source and binary forms, with or without modification,<br> 
 are permitted provided that the following conditions are met:<br><br>
