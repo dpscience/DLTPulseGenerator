@@ -140,6 +140,8 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 	default_random_engine m_generatorPulseFixedPatternApertureJitterA; // time domain
 	normal_distribution<double> m_distributionPulseFixedPatternApertureJitterA;
 
+	vector<double> m_fixedPatternApertureJitterVecA;
+
 	default_random_engine m_generatorPulseRndApertureJitterA;          // time domain
 	normal_distribution<double> m_distributionPulseRndApertureJitterA;
 
@@ -152,6 +154,8 @@ class DLifeTime::DLTPulseGenerator::DLTPulseGeneratorPrivate {
 
 	default_random_engine m_generatorPulseFixedPatternApertureJitterB; // time domain
 	normal_distribution<double> m_distributionPulseFixedPatternApertureJitterB;
+
+	vector<double> m_fixedPatternApertureJitterVecB;
 
 	default_random_engine m_generatorPulseRndApertureJitterB;          // time domain
 	normal_distribution<double> m_distributionPulseRndApertureJitterB;
@@ -688,6 +692,8 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
                 return false;
         }
 
+		int runningIndex = 0;
+
 		for (double tP_in_ns = 0.0; tP_in_ns < m_setupInfo.sweep; tP_in_ns += timeIncrInNS) {
             DLTPointF pA, pB;
 
@@ -696,12 +702,14 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
 
 			/* add non-linearity to time axis */
 			if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
-				tP_in_ns_A += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
+				tP_in_ns_A += m_privatePtr.get()->m_fixedPatternApertureJitterVecA.at(runningIndex) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
 			}
 
 			if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
-				tP_in_ns_B += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
+				tP_in_ns_B += m_privatePtr.get()->m_fixedPatternApertureJitterVecB.at(runningIndex) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
 			}
+
+			runningIndex++;
 
 			pA.setX(tP_in_ns_A);
 			pB.setX(tP_in_ns_B);
@@ -871,6 +879,8 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
                 return false;
         }
 
+		int runningIndex = 0;
+
         for ( double tP_in_ns = 0.0; tP_in_ns < m_setupInfo.sweep; tP_in_ns += timeIncrInNS ) {
             DLTPointF pA, pB;
 
@@ -879,12 +889,14 @@ bool DLifeTime::DLTPulseGenerator::emitPulses(DLifeTime::DLTPulseF *pulseA,
 
 			/* add non-linearity to time axis */
 			if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
-				tP_in_ns_A += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
+				tP_in_ns_A += m_privatePtr.get()->m_fixedPatternApertureJitterVecA.at(runningIndex) + m_privatePtr.get()->m_distributionPulseRndApertureJitterA(m_privatePtr.get()->m_generatorPulseRndApertureJitterA);
 			}
 
 			if (m_pulseInfo.pulseB.timeAxisNonLinearityInfoT.enabled) {
-				tP_in_ns_B += m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
+				tP_in_ns_B += m_privatePtr.get()->m_fixedPatternApertureJitterVecB.at(runningIndex) + m_privatePtr.get()->m_distributionPulseRndApertureJitterB(m_privatePtr.get()->m_generatorPulseRndApertureJitterB);
 			}
+
+			runningIndex++;
 
 			pA.setX(tP_in_ns_A);
 			pB.setX(tP_in_ns_B);
@@ -1157,6 +1169,15 @@ void DLifeTime::DLTPulseGenerator::initPulseGenerator(DLifeTime::DLTError *error
 		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA = normal_distribution<double>(0.0, 0.0);
 	}
 
+	/* store the fixed values */
+	m_privatePtr.get()->m_fixedPatternApertureJitterVecA.clear();
+
+	const int regA = m_setupInfo.numberOfCells * 4; // 4 - to be save ...
+
+	for (int i = 0; i < regA; ++i) {
+		m_privatePtr.get()->m_fixedPatternApertureJitterVecA.push_back(m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterA(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterA));
+	}
+
 	/* random aperture jitter - A */
 	if (m_pulseInfo.pulseA.timeAxisNonLinearityInfoT.enabled) {
 		const double incrNanoSec = (m_setupInfo.sweep / (double)m_setupInfo.numberOfCells);
@@ -1201,6 +1222,15 @@ void DLifeTime::DLTPulseGenerator::initPulseGenerator(DLifeTime::DLTError *error
 	}
 	else {
 		m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB = normal_distribution<double>(0.0, 0.0);
+	}
+
+	/* store the fixed values */
+	m_privatePtr.get()->m_fixedPatternApertureJitterVecB.clear();
+
+	const int regB = m_setupInfo.numberOfCells * 4; // 4 - to be save ...
+
+	for (int i = 0; i < regB; ++i) {
+		m_privatePtr.get()->m_fixedPatternApertureJitterVecB.push_back(m_privatePtr.get()->m_distributionPulseFixedPatternApertureJitterB(m_privatePtr.get()->m_generatorPulseFixedPatternApertureJitterB));
 	}
 
 	/* random aperture jitter - B */
