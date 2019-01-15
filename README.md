@@ -30,11 +30,9 @@ This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/t
 
 This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper (v1.2) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.06.003)</b> and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
 
-## DLTPulseGenerator v1.3 (not officially released yet)
+## DLTPulseGenerator v1.3
 
-This version provides the simulation of additional hardware influences such as baseline offset jitter, random noise, time axis nonlinearity, fixed and random pattern aperture jitter on the time axis and the digitization depth [bit] of the ADC.
-
-note: This version isn't officially released yet but can be tested using <b>DDRS4PALS v1.08</b> (dpscience-local repo).
+This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> provides the simulation of additional hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis and the digitization depth [bit].
 
 ## Applications using DLTPulseGenerator library
 
