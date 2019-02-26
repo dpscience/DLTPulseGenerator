@@ -20,8 +20,6 @@ Petschke D., Staab T.E.M. <i>DLTPulseGenerator: A library for the simulation of 
 
 This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> refers to the <b>original paper [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.04.002)</b> and provides the simulation of lifetime spectra consisting of <i>discrete specific lifetimes</i>.
 
-forked by <b>SoftwareX (Elsevier)</b>: [https://github.com/ElsevierSoftwareX/SOFTX-D-17-00077](https://github.com/ElsevierSoftwareX/SOFTX-D-17-00077) 
-
 ## DLTPulseGenerator v1.1
 
 This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the <b>update paper (v1.1) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2018.05.001)</b> and was extended to provide the simulation of lifetime spectra consisting of <i>distributed specific lifetimes</i> as can be found in porous materials (polymers, glasses) using positron annihilation lifetime spectroscopy (PALS).
@@ -32,7 +30,7 @@ This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/t
 
 ## DLTPulseGenerator v1.3
 
-This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> provides the simulation of additional hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis and the digitization depth [bit].
+This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> refers to the <b>update paper (v1.3) [(Petschke and Staab (2018))](https://doi.org/10.1016/j.softx.2019.02.003)</b> and provides the simulation of additional hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis and the digitization depth [bit].
 
 ## Applications using DLTPulseGenerator library
 
