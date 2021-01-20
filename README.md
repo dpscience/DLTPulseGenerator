@@ -17,6 +17,64 @@ Support this project and keep always updated about recent software releases, bug
 Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
 <b>DLTPulseGenerator</b> - A library for the simulation of lifetime spectra based on detector-output pulses
 
+# Quickstart Guide
+
+### ``How to apply? ... only a few Lines of Code ...``
+
+```c++
+#define forever                 while(true)
+#define DDELETE_SAFETY(__ptr__) { if (__ptr__) { delete __ptr__; __ptr__ = nullptr; } }
+
+int main() {
+  printf("let's go ...\n\n");
+
+  /* 1a. define your virtual setup and spectrum to be simulated */
+  DLTSetup setup                     = DLTSetup_DEMO; 
+  DLTPulse pulse                     = DLTPulse_DEMO; 
+  DLTPHS phs                         = DLTPHS_DEMO; 
+  DLTSimulationInput simulationInput = DLTSimulationInput_DEMO; 
+  
+  /* 1b. set the trigger-levels for both detector branches A and B: */
+  const double triggerA_in_mV = 50.0;
+  const double triggerB_in_mV = 50.0;
+  
+  /* 2. create to an instance of DLTPulseGenerator class and pass your setup information and simulation input */
+  DLTPulseGenerator *pulseGenerator = new DLTPulseGenerator(simulationInput, phs, setup, pulse, nullptr);
+  
+  /* pulses to be manipulated by calling 'emitPulses(..)' */
+  DLTPulseF pulseA, pulseB;
+  
+  forever {
+    /* receive the pulses */ 
+    if ( pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV) ) {
+    
+      /* now its your turn ... use the generated pulses for whatever purposes ... for example */
+      
+      /* const double timingA = determineCFTiming(pulseA, level=50.);
+	 const double timingB = determineCFTiming(pulseB, level=50.);
+
+	 const double lifetime = calcTimeDifference(timingA, timingB);
+
+	 ... generate the lifetime spectrum ... */
+    }
+    else
+      break;
+  }
+  
+  DDELETE_SAFETY(pulseGenerator)
+}
+```
+
+### ``Software Applications using DLTPulseGenerator Library``
+
+<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
+
+### ``Using DLTPulseGenerator with Python``
+
+DLTPulseGenerator can be compiled as linked library enabling access from programming languages such as Python or Matlab.
+
+A library wrapper for Python ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) is provided (see [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py))
+
 # Related Presentation & Publications
 
 ### ``DLTPulseGenerator v1.0``
@@ -67,76 +125,19 @@ and provides the simulation of realistic hardware influences mainly originating 
 
 ![SoftX_1_3](/images/softxPub_1_3.png)
 
+### ``Presentation at 18th International Conference on Positron Annihilation (ICPA-18) in Orlando (Aug. 2018)``
+
+[ICPA-18 (Orlando): DLTPulseGenerator - A C/C++ library for the simulation of lifetime spectra based on detector output-pulses](https://www.researchgate.net/publication/329782711_ICPA-18_Orlando_DLTPulseGenerator_-_A_CC_library_for_the_simulation_of_lifetime_spectra_based_on_detector_output-pulses)<br>
+
 # How to cite this Library?
 
-<b>You should at least cite the following publication:</b><br><br>
+* <b>You should at least cite the following publication.</b><br>
+
+[![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.04.002-yellowgreen)](https://doi.org/10.1016/j.softx.2018.04.002)
+
 [DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses (SoftwareX 2018, Elsevier)](https://doi.org/10.1016/j.softx.2018.04.002)<br><br>
 
-
-
-## Software Applications using DLTPulseGenerator library
-
-<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
-
-# Example using C++
-
-```c++
-#define forever                 while(true)
-#define DDELETE_SAFETY(__ptr__) { if (__ptr__) { delete __ptr__; __ptr__ = nullptr; } }
-
-int main() {
-  printf("How to easily implement DLTPulseGenerator library?\n\n");
-
-  /* 1a. Define structs: */
-  DLTSetup setup                     = DLTSetup_DEMO; 
-  DLTPulse pulse                     = DLTPulse_DEMO; 
-  DLTPHS phs                         = DLTPHS_DEMO; 
-  DLTSimulationInput simulationInput = DLTSimulationInput_DEMO; 
-  
-  /* 1b. Set trigger-levels for branch A and B: */
-  const double triggerA_in_mV = 50.0;
-  const double triggerB_in_mV = 50.0;
-  
-  /* 2. Initialize DLTPulseGenerator class: */
-  DLTPulseGenerator *pulseGenerator = new DLTPulseGenerator(simulationInput, phs, setup, pulse, nullptr);
-  
-  /* 3. Receive pulses: */
-  DLTPulseF pulseA, pulseB;
-  
-  forever {
-    if ( pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV) ) {
-      /* all algorithms for exact timing determination and lifetime calculation, respectively, have to be placed here! */
-      /* const double timingA = CFD(pulseA, level);
-	 const double timingB = CFD(pulseB, level);
-
-	 const double lifetime = calcDifference(timingA, timingB);
-
-	 -> binning the lifetimes (MCA). */
-    }
-    else
-      break;
-  }
-  
-  DDELETE_SAFETY(pulseGenerator)
-}
-```
-Errors can be handled by inheriting <i>class DLTPulseGenerator</i> using the provided callback function: see [DLTPulseGeneratorApp.h/.cpp](https://github.com/dpscience/DLTPulseGenerator/blob/master/DLTPulseGenerator/example/AppDLTPulseGenerator/AppDLTPulseGenerator/DLTPulseGeneratorApp.h).  
-
-# Example using Python
-
-A <b>library wrapper</b> in <i>python</i> ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) by calling the functions of <b>DLTPulseGenerator.dll</b> ([x86](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x86)/[x64](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator/x64)) is provided. [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py) calls functions from the library (wrapper) [pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py). The generated pulse pairs and the pulse height spectrum are displayed for demonstration purposes.<br>
-
-#### Requirements:
-
-- [ctypes](https://docs.python.org/3/library/ctypes.html) 
-- [NumPy](http://www.numpy.org/) 
-- [matplotlib](https://matplotlib.org/)<br>
-
-#### [WinPython](https://sourceforge.net/projects/winpython/) meets all requirements. 
-
-![Generated Pulses](/pyDLTPulseGenerator/PulsesPythonAndPHS.png)
-
-# License (BSD-3-Clause)
+# License of DLTPulseGenerator (BSD-3-Clause)
 
 Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
 
