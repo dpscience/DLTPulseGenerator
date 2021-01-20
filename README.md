@@ -23,41 +23,49 @@ Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All ri
 
 [![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.04.002-yellowgreen)](https://doi.org/10.1016/j.softx.2018.04.002)
 
-This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> relates to the <b>original paper by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
+This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> refers to the <b>original paper by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
 
 [DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.04.002)<br>
 
 and provides the simulation of lifetime spectra consisting of <i>discrete characteristic lifetimes</i> based on detector-output pulses modelled by a log-normal distribution function.
 
+![SoftX_1_0](/images/softxPub.png)
+
 ### ``DLTPulseGenerator v1.1``
 
 [![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.05.001-yellowgreen)](https://doi.org/10.1016/j.softx.2018.05.001)
 
-This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> relates to the <b>update paper (v1.1) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
+This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> refers to the <b>update paper (v1.1) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
 
 [Update (v1.1) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.05.001)<br>
 
 and provides the simulation of lifetime spectra consisting of <i>distributed characteristic lifetimes</i> as can be found in porous materials such as polymers or glasses due to distributions in their pore-sizes.
 
+![SoftX_1_1](/images/softxPub_1_1.png)
+
 ### ``DLTPulseGenerator v1.2``
 
 [![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.06.003-yellowgreen)](https://doi.org/10.1016/j.softx.2018.06.003)
 
-This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> relates to the <b>update paper (v1.2) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b>
+This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> refers to the <b>update paper (v1.2) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b>
 
 [Update (v1.2) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.06.003)<br>
 
 and enables the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU.
 
+![SoftX_1_2](/images/softxPub_1_2.png)
+
 ### ``DLTPulseGenerator v1.3``
 
 [![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2019.02.003-yellowgreen)](https://doi.org/10.1016/j.softx.2019.02.003)
 
-This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> relates to the <b>update paper (v1.3) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2019)</b>
+This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> refers to the <b>update paper (v1.3) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2019)</b>
 
 [Update (v1.3) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2019.02.003)<br>
 
 and provides the simulation of realistic hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis or the digitization depth.
+
+![SoftX_1_3](/images/softxPub_1_3.png)
 
 # How to cite this Library?
 
