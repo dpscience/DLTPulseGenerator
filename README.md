@@ -1,56 +1,70 @@
-Support this project and keep always updated about recent software releases, bug fixes and major improvements by [following on researchgate](https://www.researchgate.net/project/DDRS4PALS-a-software-for-the-acquisition-and-simulation-of-positron-annihilation-lifetime-spectra-PALS-using-the-DRS4-evaluation-board) or [github](https://github.com/dpscience?tab=followers).<br><br>
+![badge-OS](https://img.shields.io/badge/OS-tested%20under%20Windows%2010-brightgreen)
+
+Support this project and keep always updated about recent software releases, bug fixes and major improvements by [following on researchgate](https://www.researchgate.net/project/DDRS4PALS-a-software-for-the-acquisition-and-simulation-of-positron-annihilation-lifetime-spectra-PALS-using-the-DRS4-evaluation-board) or [github](https://github.com/dpscience?tab=followers).
+
+[![badge-researchGate](https://img.shields.io/badge/project-researchGate-brightgreen)](https://www.researchgate.net/project/DDRS4PALS-a-software-for-the-acquisition-and-simulation-of-positron-annihilation-lifetime-spectra-PALS-using-the-DRS4-evaluation-board)
+
+![badge-followers](https://img.shields.io/github/followers/dpscience?style=social)
+![badge-stars](https://img.shields.io/github/stars/dpscience/DLTPulseGenerator?style=social)
+![badge-forks](https://img.shields.io/github/forks/dpscience/DLTPulseGenerator?style=social)
 
 # DLTPulseGenerator
+
+![badge-OS](https://img.shields.io/badge/OS-Windows-blue)
+![badge-language](https://img.shields.io/badge/language-C++-blue)
+![badge-license](https://img.shields.io/badge/license-BSD-blue)
 
 Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
 <b>DLTPulseGenerator</b> - A library for the simulation of lifetime spectra based on detector-output pulses
 
-# Introduction
+# Related Presentation & Publications
 
-The quantitative analysis of lifetime spectra relevant in both life and materials sciences represents one of the ill-posed (and inverse) problems. Hence, stringent requirements on the hardware specifications and analysis algorithms are required.<br><br>
-<b>DLTPulseGenerator is written in native C++ 11</b> and provides the simulation of (e.g. positron or fluorescence) lifetime spectra according to the measurement setup, i.e. the kind of detectors (photomultipliers or photodiodes) and the acquisition hardware, which mostly consists of a combination of ADC and FPGA. 
-The simulation is based on pairs of non-TTL shaped detector output pulses which require the constant fraction (CF) principle for the determination of the exact timing signal.<br><br>
+### ``DLTPulseGenerator v1.0``
 
-DLTPulseGenerator library provides the compilation as <i>static</i> or <i>linked</i> library to make it easily accessible from other programming languages such as<br>
-- <i>matlab</i> ([mex-library](https://de.mathworks.com/help/matlab/matlab_external/standalone-example.html)) or<br>
-- <i>python</i> ([ctypes-library](https://docs.python.org/3/library/ctypes.html)). 
+[![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.04.002-yellowgreen)](https://doi.org/10.1016/j.softx.2018.04.002)
+
+This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> relates to the <b>original paper by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
+
+[DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.04.002)<br>
+
+and provides the simulation of lifetime spectra consisting of <i>discrete characteristic lifetimes</i> based on detector-output pulses modelled by a log-normal distribution function.
+
+### ``DLTPulseGenerator v1.1``
+
+[![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.05.001-yellowgreen)](https://doi.org/10.1016/j.softx.2018.05.001)
+
+This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> relates to the <b>update paper (v1.1) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
+
+[Update (v1.1) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.05.001)<br>
+
+and provides the simulation of lifetime spectra consisting of <i>distributed characteristic lifetimes</i> as can be found in porous materials such as polymers or glasses due to distributions in their pore-sizes.
+
+### ``DLTPulseGenerator v1.2``
+
+[![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2018.06.003-yellowgreen)](https://doi.org/10.1016/j.softx.2018.06.003)
+
+This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> relates to the <b>update paper (v1.2) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b>
+
+[Update (v1.2) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.06.003)<br>
+
+and enables the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU.
+
+### ``DLTPulseGenerator v1.3``
+
+[![DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.softx.2019.02.003-yellowgreen)](https://doi.org/10.1016/j.softx.2019.02.003)
+
+This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> relates to the <b>update paper (v1.3) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2019)</b>
+
+[Update (v1.3) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2019.02.003)<br>
+
+and provides the simulation of realistic hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis or the digitization depth.
 
 # How to cite this Library?
 
 <b>You should at least cite the following publication:</b><br><br>
 [DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses (SoftwareX 2018, Elsevier)](https://doi.org/10.1016/j.softx.2018.04.002)<br><br>
 
-## DLTPulseGenerator v1.0
 
-This <b>[release v1.0](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.0)</b> relates to the <b>original paper by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
-
-[DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.04.002)<br>
-
-and provides the simulation of lifetime spectra consisting of <i>discrete specific lifetimes</i> based on detector-output pulses modelled by a log-normal distribution function.
-
-## DLTPulseGenerator v1.1
-
-This <b>[release v1.1](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.1)</b> relates to the <b>update paper (v1.1) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b> 
-
-[Update (v1.1) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.05.001)<br>
-
-and provides the simulation of lifetime spectra consisting of <i>distributed characteristic lifetimes</i> as can be found in porous materials (polymers, glasses) due to their pore-size distributions using positron annihilation lifetime spectroscopy (PALS).
-
-## DLTPulseGenerator v1.2
-
-This <b>[release v1.2](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.2)</b> relates to the <b>update paper (v1.2) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2018)</b>
-
-[Update (v1.2) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2018.06.003)<br>
-
-and was modified to allow the simulation of lifetime spectra consisting of non-Gaussian or any-distributed and linearly combined Instrument Response Functions (IRF) for the PDS A/B and MU. 
-
-## DLTPulseGenerator v1.3
-
-This <b>[release v1.3](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.3)</b> relates to the <b>update paper (v1.3) by Petschke <i>et al.</i> published in SoftwareX (Elsevier, 2019)</b>
-
-[Update (v1.3) to DLTPulseGenerator: A library for the simulation of lifetime spectra based on detector-output pulses](https://doi.org/10.1016/j.softx.2019.02.003)<br>
-
-and provides the simulation of realistic hardware influences mainly originating from the parts of the A/D converter such as baseline-offset jitter, random noise, fixed pattern and random aperture jitters on the time axis and the digitization depth.
 
 ## Software Applications using DLTPulseGenerator library
 
