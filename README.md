@@ -13,6 +13,7 @@ Support this project and keep always updated about recent software releases, bug
 
 ![badge-OS](https://img.shields.io/badge/OS-Windows-blue)
 ![badge-language](https://img.shields.io/badge/language-C++-blue)
+![badge-language](https://img.shields.io/badge/language-Python-blue)
 ![badge-license](https://img.shields.io/badge/license-BSD-blue)
 
 Copyright (c) 2016-2022 Dr. Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
