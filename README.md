@@ -1,4 +1,5 @@
 ![badge-OS](https://img.shields.io/badge/OS-tested%20under%20Windows%2010-brightgreen)
+![badge-OS](https://img.shields.io/badge/OS-tested%20under%20Windows%2011-brightgreen)
 
 Support this project and keep always updated about recent software releases, bug fixes and major improvements by [following on researchgate](https://www.researchgate.net/project/DDRS4PALS-a-software-for-the-acquisition-and-simulation-of-positron-annihilation-lifetime-spectra-PALS-using-the-DRS4-evaluation-board) or [github](https://github.com/dpscience?tab=followers).
 
@@ -14,12 +15,16 @@ Support this project and keep always updated about recent software releases, bug
 ![badge-language](https://img.shields.io/badge/language-C++-blue)
 ![badge-license](https://img.shields.io/badge/license-BSD-blue)
 
-Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
+Copyright (c) 2016-2022 Dr. Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
 <b>DLTPulseGenerator</b> - A library for the simulation of lifetime spectra based on detector-output pulses
+
+### ``Software Applications using DLTPulseGenerator Library``
+
+<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
 
 # Quickstart Guide
 
-### ``How to apply? ... only a few Lines of Code ...``
+### ``C++ Example Code``
 
 ```c++
 #define forever                 while(true)
@@ -28,34 +33,39 @@ Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All ri
 int main() {
   printf("let's go ...\n\n");
 
-  /* 1a. define your virtual setup and spectrum to be simulated */
+  /* 1a. define your virtual setup and desired spectrum to be simulated */
+  
   DLTSetup setup                     = DLTSetup_DEMO; 
   DLTPulse pulse                     = DLTPulse_DEMO; 
   DLTPHS phs                         = DLTPHS_DEMO; 
   DLTSimulationInput simulationInput = DLTSimulationInput_DEMO; 
   
-  /* 1b. set the trigger-levels for both detector branches A and B: */
+  /* 1b. set the trigger-levels for both detector branches A and B */
+  
   const double triggerA_in_mV = 50.0;
   const double triggerB_in_mV = 50.0;
   
-  /* 2. create to an instance of DLTPulseGenerator class and pass your setup information and simulation input */
+  /* 2. create an instance of DLTPulseGenerator class and pass your setup information and simulation input */
+  
   DLTPulseGenerator *pulseGenerator = new DLTPulseGenerator(simulationInput, phs, setup, pulse, nullptr);
   
   /* pulses to be manipulated by calling 'emitPulses(..)' */
+  
   DLTPulseF pulseA, pulseB;
   
   forever {
     /* receive the pulses */ 
-    if ( pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV) ) {
     
-      /* now its your turn ... use the generated pulses for whatever purposes ... for example */
+    if (pulseGenerator->emitPulses(&pulseA, &pulseB, triggerA_in_mV, triggerB_in_mV)) {
+    
+      /* now its your turn ... use the generated pulses for whatever purposes ... for example ... */
       
       /* const double timingA = determineCFTiming(pulseA, level=50.);
 	 const double timingB = determineCFTiming(pulseB, level=50.);
 
 	 const double lifetime = calcTimeDifference(timingA, timingB);
 
-	 ... generate the lifetime spectrum ... */
+	 ... add to the lifetime spectrum ... */
     }
     else
       break;
@@ -65,15 +75,59 @@ int main() {
 }
 ```
 
-### ``Software Applications using DLTPulseGenerator Library``
+### ``Python Example Code``
 
-<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
+DLTPulseGenerator can be compiled as linked library enabling access from programming languages such as Python (or Matlab).
 
-### ``Using DLTPulseGenerator with Python``
+A library wrapper for Python ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) is provided (see [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)). 
 
-DLTPulseGenerator can be compiled as linked library enabling access from programming languages such as Python or Matlab.
+Examples can be found ([here](https://github.com/dpscience/DLTPulseGenerator/tree/master/pyDLTPulseGenerator)).
 
-A library wrapper for Python ([pyDLTPulseGenerator.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGenerator.py)) demonstrating the usage of [ctypes-library](https://docs.python.org/3/library/ctypes.html) is provided (see [pyDLTPulseGeneratorApp.py](https://github.com/dpscience/DLTPulseGenerator/blob/master/pyDLTPulseGenerator/pyDLTPulseGeneratorApp.py))
+```python
+import pyDLTPulseGenerator as dpg # import 'pyDLTPulseGenerator' module
+import matplotlib.pyplot as plt
+
+numberOfPulses = 100000 # number of pulses to be generated ...
+
+# set trigger levels for branches A & B [mV] ...
+    
+triggerA = -25. # [mV]
+triggerB = -25. # [mV]
+
+# define your simulation input (or apply the defaults) ...
+    
+lt          = dpg.DLTSimulationInput()
+setupInfo   = dpg.DLTSetup()
+pulseInfo   = dpg.DLTPulse()
+phs         = dpg.DLTPHS()
+
+# create an instance of DLTPulseGenerator ...
+    
+pulseGen = dpg.DLTPulseGenerator(phs,
+                                 lt,
+                                 setupInfo,
+                                 pulseInfo,
+                                 'dltpulsegenerator.dll')
+				 			
+# catch errors ...
+    
+if not pulseGen.printErrorDescription():
+    quit() # kill process on error ...
+
+pulseA = dpg.DLTPulseF() # pulse of detector A
+pulseB = dpg.DLTPulseF() # pulse of detector B
+
+for i in range(numberOfPulses):    
+    if not pulseGen.emitPulses(pulseA,pulseB,triggerA,triggerB): # generate pulse pairs ...
+        continue
+	
+    plt.plot(pulseA.getTime(),pulseA.getVoltage(),'r-',label="pulse-A")
+    plt.plot(pulseB.getTime(),pulseB.getVoltage(),'b-',label="pulse-B")
+    plt.show()
+    
+    // ...
+
+```
 
 # Related Presentation & Publications
 
@@ -125,6 +179,11 @@ and provides the simulation of realistic hardware influences mainly originating 
 
 ![SoftX_1_3](/images/softxPub_1_3.png)
 
+### ``DLTPulseGenerator v1.4``
+
+This <b>[release v1.4](https://github.com/dpscience/DLTPulseGenerator/releases/tag/1.4)</b> enables the incorporation of pulse height spectra (PHS) from real data or
+generated by Geant4, so that effects of the background contributing to the lifetime spectrum or PHS window settings can be studied.
+
 ### ``Presentation at 18th International Conference on Positron Annihilation (ICPA-18) in Orlando (Aug. 2018)``
 
 [ICPA-18 (Orlando): DLTPulseGenerator - A C/C++ library for the simulation of lifetime spectra based on detector output-pulses](https://www.researchgate.net/publication/329782711_ICPA-18_Orlando_DLTPulseGenerator_-_A_CC_library_for_the_simulation_of_lifetime_spectra_based_on_detector_output-pulses)<br>
@@ -139,7 +198,7 @@ and provides the simulation of realistic hardware influences mainly originating 
 
 # License of DLTPulseGenerator (BSD-3-Clause)
 
-Copyright (c) 2016-2019 Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
+Copyright (c) 2016-2022 Dr. Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br>
 
 Redistribution and use in source and binary forms, with or without modification,<br> 
 are permitted provided that the following conditions are met:<br><br>
