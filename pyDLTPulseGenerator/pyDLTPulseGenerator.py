@@ -1,6 +1,6 @@
 #*************************************************************************************************
 #**
-#** Copyright (c) 2017-2019 Danny Petschke. All rights reserved.
+#** Copyright (c) 2017-2022 Dr. Danny Petschke. All rights reserved.
 #** 
 #** Redistribution and use in source and binary forms, with or without modification, 
 #** are permitted provided that the following conditions are met:
@@ -35,9 +35,9 @@ import ctypes
 from ctypes import cdll
 
 def __information__():
-    print("#****************** pyDLTPulseGenerator 1.3 (07.01.2019) *******************")
+    print("#****************** pyDLTPulseGenerator 1.4 (28.08.2022) *******************")
     print("#**")
-    print("#** Copyright (C) 2017-2019 Danny Petschke")
+    print("#** Copyright (C) 2017-2022 Dr. Danny Petschke")
     print("#**")
     print("#** Contact: danny.petschke@uni-wuerzburg.de")
     print("#**")
@@ -46,7 +46,7 @@ def __information__():
 def __licence__():
     print("#*************************************************************************************************")
     print("#**")
-    print("#** Copyright (c) 2017-2019 Danny Petschke. All rights reserved.")
+    print("#** Copyright (c) 2017-2022 Dr. Danny Petschke. All rights reserved.")
     print("#**")
     print("#** Redistribution and use in source and binary forms, with or without modification,") 
     print("#** are permitted provided that the following conditions are met:")
@@ -162,24 +162,53 @@ class DLTPulseF:
             
 
 class DLTPHS:
-    m_meanOfStart_A_in_milliVolt   = -190.0
-    m_meanOfStop_A_in_milliVolt    = -90.0
+    m_useGaussianModels = True
+    
+    # if 'm_useGaussianModels' == True
+    
+    m_meanOfStart_A_in_milliVolt = -190.0
+    m_meanOfStop_A_in_milliVolt = -90.0
     m_stddevOfStart_A_in_milliVolt = -150.0
-    m_stddevOfStop_A_in_milliVolt  = -25.0
+    m_stddevOfStop_A_in_milliVolt = -25.0
 
-    m_meanOfStart_B_in_milliVolt   = -190.0
-    m_meanOfStop_B_in_milliVolt    = -90.0
+    m_meanOfStart_B_in_milliVolt = -190.0
+    m_meanOfStop_B_in_milliVolt = -90.0
     m_stddevOfStart_B_in_milliVolt = -150.0
-    m_stddevOfStop_B_in_milliVolt  = -25.0
+    m_stddevOfStop_B_in_milliVolt = -25.0
+    
+    # if 'm_useGaussianModels' == False
+    
+    m_distributionStartA = []
+    m_distributionStopA = []
+    m_resolutionMilliVoltPerStepA = 0.5 # [mV]
+    m_gridNumberA = 10000
+    
+    m_distributionStartB = []
+    m_distributionStopB = []
+    m_resolutionMilliVoltPerStepB = 0.5 # [mV]
+    m_gridNumberB = 10000
 
-    def __init__(self,   meanOfStartA   = -190.0,
-                         stddevOfStartA = -150.0,
-                         meanOfStopA    = -90.0,
-                         stddevOfStopA  = -25.0,
-                         meanOfStartB   = -190.0,
-                         stddevOfStartB = -150.0,
-                         meanOfStopB    = -90.0,
-                         stddevOfStopB  = -25.0):
+    def __init__(self,   useGaussianModels = True,   
+                 
+                         meanOfStartA      = -190.0,
+                         stddevOfStartA    = -150.0,
+                         meanOfStopA       = -90.0,
+                         stddevOfStopA     = -25.0,
+                         meanOfStartB      = -190.0,
+                         stddevOfStartB    = -150.0,
+                         meanOfStopB       = -90.0,
+                         stddevOfStopB     = -25.0,
+                         
+                         distributionStartA          = [],
+                         distributionStopA           = [],
+                         resolutionMilliVoltPerStepA = 0.5,
+                         gridNumberA                 = 10000,
+                         distributionStartB          = [],
+                         distributionStopB           = [],
+                         resolutionMilliVoltPerStepB = 0.5,
+                         gridNumberB                 = 10000):
+        self.m_useGaussianModels = useGaussianModels
+        
         self.m_meanOfStart_A_in_milliVolt = meanOfStartA
         self.m_meanOfStop_A_in_milliVolt = meanOfStopA
         self.m_stddevOfStart_A_in_milliVolt = stddevOfStartA
@@ -189,17 +218,27 @@ class DLTPHS:
         self.m_meanOfStop_B_in_milliVolt = meanOfStopB
         self.m_stddevOfStart_B_in_milliVolt = stddevOfStartB
         self.m_stddevOfStop_B_in_milliVolt = stddevOfStopB
+        
+        self.m_distributionStartA = distributionStartA
+        self.m_distributionStopA = distributionStopA
+        self.m_resolutionMilliVoltPerStepA = resolutionMilliVoltPerStepA
+        self.m_gridNumberA = gridNumberA
+        
+        self.m_distributionStartB = distributionStartB
+        self.m_distributionStopB = distributionStopB
+        self.m_resolutionMilliVoltPerStepB = resolutionMilliVoltPerStepB
+        self.m_gridNumberB = gridNumberB
 
 class DLTDistributionInfo:
     m_enabled = False
 
-    #GAUSSIAN           = 0
-    #LOG_NORMAL         = 1
-    #LORENTZIAN_CAUCHY  = 2
+    # GAUSSIAN           = 0
+    # LOG_NORMAL         = 1
+    # LORENTZIAN_CAUCHY  = 2
     
     m_functionType = 0
     m_param1 = 0.0
-    m_param2 = 0.0 #reserved for future implementations
+    m_param2 = 0.0 # reserved for future implementations
     m_gridCount = 0
     m_gridIncrement = 0.0
 
@@ -281,9 +320,9 @@ class DLTSimulationInput:
 class DLTIRF:
     m_enabled = False
 
-    #GAUSSIAN           = 0
-    #LOG_NORMAL         = 1
-    #LORENTZIAN_CAUCHY  = 2
+    # GAUSSIAN           = 0
+    # LOG_NORMAL         = 1
+    # LORENTZIAN_CAUCHY  = 2
     
     m_functionType  = 0
     m_relativeShift = 0.0
@@ -298,21 +337,24 @@ class DLTIRF:
         self.m_uncertainty = uncertainty
         
 class DLTSetup:
-    #PDS-A:
+    # PDS-A
+    
     m_irf_PDSA_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901)
     m_irf_PDSA_2 = DLTIRF()
     m_irf_PDSA_3 = DLTIRF()
     m_irf_PDSA_4 = DLTIRF()
     m_irf_PDSA_5 = DLTIRF()
 
-    #PDS-B:
+    # PDS-B
+    
     m_irf_PDSB_1 = DLTIRF(True, 0, 0.0, 1.0, 0.084932901)
     m_irf_PDSB_2 = DLTIRF()
     m_irf_PDSB_3 = DLTIRF()
     m_irf_PDSB_4 = DLTIRF()
     m_irf_PDSB_5 = DLTIRF()
 
-    #MU:
+    # MU
+    
     m_irf_MU_1 = DLTIRF(True, 0, 0.0, 1.0, 0.0025)
     m_irf_MU_2 = DLTIRF()
     m_irf_MU_3 = DLTIRF()
@@ -371,7 +413,9 @@ class DLTPulseTimeAxisNonlinearityInfo:
     m_fixedPatternApertureJitter = 0.0
     m_rndApertureJitter = 0.0
 
-    def __init__(self, enabled = False, fixedPatternApertureJitter = 0.0, rndApertureJitter = 0.0):
+    def __init__(self, enabled = False, 
+                 fixedPatternApertureJitter = 0.0, 
+                 rndApertureJitter = 0.0):
         self.m_enabled = enabled
         self.m_fixedPatternApertureJitter = fixedPatternApertureJitter
         self.m_rndApertureJitter = rndApertureJitter
@@ -380,7 +424,8 @@ class DLTPulseRandomNoiseInfo:
     m_enabled = False
     m_rndNoise = 0.0
     
-    def __init__(self, enabled = False, rndNoise = 0.0):
+    def __init__(self, enabled = False, 
+                 rndNoise = 0.0):
         self.m_enabled = enabled
         self.m_rndNoise = rndNoise
         
@@ -389,7 +434,9 @@ class DLTPulseBaselineOffsetJitterInfo:
     m_meanOfBaselineOffsetJitter = 0.0
     m_stddevOfBaselineOffsetJitter = 0.0
 
-    def __init__(self, enabled = False, meanOfBaselineOffsetJitter = 0.0, stddevOfBaselineOffsetJitter = 0.0):
+    def __init__(self, enabled = False, 
+                 meanOfBaselineOffsetJitter = 0.0, 
+                 stddevOfBaselineOffsetJitter = 0.0):
         self.m_enabled = enabled
         self.m_meanOfBaselineOffsetJitter = meanOfBaselineOffsetJitter
         self.m_stddevOfBaselineOffsetJitter = stddevOfBaselineOffsetJitter
@@ -404,8 +451,8 @@ class DLTPulseInfo:
     
     def __init__(self, riseTime_in_nanoSeconds   = 5.0,
                        pulseWidth_in_nanoSeconds = 0.165,
-                       baselineOffsetJitterInfo  = DLTPulseBaselineOffsetJitterInfo(True, 0.0, 5.0),
-                       randomNoiseInfo           = DLTPulseRandomNoiseInfo(True, 0.35),
+                       baselineOffsetJitterInfo  = DLTPulseBaselineOffsetJitterInfo(False, 0.0, 5.0),
+                       randomNoiseInfo           = DLTPulseRandomNoiseInfo(True, 0.45),
                        timeAxisNonlinearityInfo  = DLTPulseTimeAxisNonlinearityInfo(True, 0.005, 0.001)):
         self.m_riseTime_in_nanoSeconds = riseTime_in_nanoSeconds
         self.m_pulseWidth_in_nanoSeconds = pulseWidth_in_nanoSeconds
@@ -448,7 +495,6 @@ class DLTPulse:
 
         self.m_digitizationInfo = digitizationInfo
         
-                 
 class DLTPulseGenerator:
     __dllPtr = 0
 
@@ -466,11 +512,12 @@ class DLTPulseGenerator:
                  dLTSimulationInput       = DLTSimulationInput(),
                  dLTSetupInfo             = DLTSetup(),
                  dLTPulseInfo             = DLTPulse(),
-                 path = "DLTPulseGenerator.dll"):
+                 path = "../DLTPulseGenerator.dll"):
         self.__dllPtr = cdll.LoadLibrary(path)
-        self.__dllPtr.init() #initialize the Pulse-Generator once!
+        self.__dllPtr.init() # generate single instance ...
 
-        #DLTSimulationInput:
+        # DLTSimulationInput
+        
         self.__dllPtr.setLifeTime_1(ctypes.c_bool(dLTSimulationInput.m_lt1_activated),
                                     ctypes.c_double(dLTSimulationInput.m_tau1_in_nanoSeconds),
                                     ctypes.c_double(dLTSimulationInput.m_intensity1),
@@ -513,17 +560,60 @@ class DLTPulseGenerator:
                                     ctypes.c_double(dLTSimulationInput.m_distrInfo5.m_gridIncrement))
         self.__dllPtr.setStartStopAlternating(ctypes.c_bool(dLTSimulationInput.m_isStartStopAlternating))
 
-        #DLTPHS:
-        self.__dllPtr.setStartOfA(ctypes.c_double(dLTPHSDistribution.m_meanOfStart_A_in_milliVolt),
-                                  ctypes.c_double(dLTPHSDistribution.m_stddevOfStart_A_in_milliVolt))
-        self.__dllPtr.setStopOfA(ctypes.c_double(dLTPHSDistribution.m_meanOfStop_A_in_milliVolt),
-                                  ctypes.c_double(dLTPHSDistribution.m_stddevOfStop_A_in_milliVolt))
-        self.__dllPtr.setStartOfB(ctypes.c_double(dLTPHSDistribution.m_meanOfStart_B_in_milliVolt),
-                                  ctypes.c_double(dLTPHSDistribution.m_stddevOfStart_B_in_milliVolt))
-        self.__dllPtr.setStopOfB(ctypes.c_double(dLTPHSDistribution.m_meanOfStop_B_in_milliVolt),
-                                  ctypes.c_double(dLTPHSDistribution.m_stddevOfStop_B_in_milliVolt))
+        # DLTPHS 
         
-        #DLTSetup:
+        self.__dllPtr.setPHSFromGaussianModel(ctypes.c_bool(dLTPHSDistribution.m_useGaussianModels))
+        
+        if dLTPHSDistribution.m_useGaussianModels == True:
+            self.__dllPtr.setStartOfA(ctypes.c_double(dLTPHSDistribution.m_meanOfStart_A_in_milliVolt),
+                                      ctypes.c_double(dLTPHSDistribution.m_stddevOfStart_A_in_milliVolt))
+            self.__dllPtr.setStopOfA(ctypes.c_double(dLTPHSDistribution.m_meanOfStop_A_in_milliVolt),
+                                      ctypes.c_double(dLTPHSDistribution.m_stddevOfStop_A_in_milliVolt))
+            self.__dllPtr.setStartOfB(ctypes.c_double(dLTPHSDistribution.m_meanOfStart_B_in_milliVolt),
+                                      ctypes.c_double(dLTPHSDistribution.m_stddevOfStart_B_in_milliVolt))
+            self.__dllPtr.setStopOfB(ctypes.c_double(dLTPHSDistribution.m_meanOfStop_B_in_milliVolt),
+                                      ctypes.c_double(dLTPHSDistribution.m_stddevOfStop_B_in_milliVolt))
+        else:
+            startPHSSizeA = len(dLTPHSDistribution.m_distributionStartA)
+            startPHSA = (ctypes.c_double*startPHSSizeA)()
+            
+            for i in range(0,len(dLTPHSDistribution.m_distributionStartA)):
+                startPHSA[i] = dLTPHSDistribution.m_distributionStartA[i]
+                
+            stopPHSSizeA = len(dLTPHSDistribution.m_distributionStopA)
+            stopPHSA = (ctypes.c_double*stopPHSSizeA)()
+            
+            for i in range(0,len(dLTPHSDistribution.m_distributionStopA)):
+                stopPHSA[i] = dLTPHSDistribution.m_distributionStopA[i]
+            
+            self.__dllPtr.setPHSDistributionOfA(ctypes.c_double(dLTPHSDistribution.m_resolutionMilliVoltPerStepA), 
+                                                ctypes.c_int(dLTPHSDistribution.m_gridNumberA), 
+                                                startPHSA, 
+                                                ctypes.c_int(startPHSSizeA),
+                                                stopPHSA, 
+                                                ctypes.c_int(stopPHSSizeA))
+            
+            startPHSSizeB = len(dLTPHSDistribution.m_distributionStartB)
+            startPHSB = (ctypes.c_double*startPHSSizeB)()
+            
+            for i in range(0,len(dLTPHSDistribution.m_distributionStartB)):
+                startPHSB[i] = dLTPHSDistribution.m_distributionStartB[i]
+                
+            stopPHSSizeB = len(dLTPHSDistribution.m_distributionStopB)
+            stopPHSB = (ctypes.c_double*stopPHSSizeB)()
+            
+            for i in range(0,len(dLTPHSDistribution.m_distributionStopB)):
+                stopPHSB[i] = dLTPHSDistribution.m_distributionStopB[i]
+            
+            self.__dllPtr.setPHSDistributionOfB(ctypes.c_double(dLTPHSDistribution.m_resolutionMilliVoltPerStepB), 
+                                                ctypes.c_int(dLTPHSDistribution.m_gridNumberB), 
+                                                startPHSB, 
+                                                ctypes.c_int(startPHSSizeB),
+                                                stopPHSB, 
+                                                ctypes.c_int(stopPHSSizeB))
+        
+        # DLTSetup
+        
         self.__dllPtr.setIRF_PDS_A_1(ctypes.c_bool(dLTSetupInfo.m_irf_PDSA_1.m_enabled),
                                      ctypes.c_int(dLTSetupInfo.m_irf_PDSA_1.m_functionType),
                                      ctypes.c_double(dLTSetupInfo.m_irf_PDSA_1.m_intensity),
@@ -622,7 +712,8 @@ class DLTPulseGenerator:
         self.__dllPtr.setSweep(ctypes.c_double(dLTSetupInfo.m_sweep_in_nanoSeconds))
         self.__dllPtr.setNumberOfCells(ctypes.c_int(dLTSetupInfo.m_numberOfCells))
 
-        #DLTPulse:
+        # DLTPulse
+        
         self.__dllPtr.setRiseTimeA(ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_riseTime_in_nanoSeconds))
         self.__dllPtr.setPulseWidthA(ctypes.c_double(dLTPulseInfo.m_pulseInfoA.m_pulseWidth_in_nanoSeconds))
         self.__dllPtr.setPulseBaselineOffsetJitterA(ctypes.c_bool(dLTPulseInfo.m_pulseInfoA.m_baselineOffsetJitterInfo.m_enabled),
@@ -675,32 +766,139 @@ class DLTPulseGenerator:
         
         self.m_emitPulse.restype = ctypes.c_bool
 
-    def __del__(self):
-        del __dllPtr
-        del m_getTimeA
-        del m_getTimeB
-        del m_getVoltageA
-        del m_getVoltageB   
-        del m_error
-        del m_numberOfCells
-        del m_emitPulse
-
     def getError(self):
         return self.__dllPtr.getLastError()
+    
+    def printErrorDescription(self):
+        # enum DLTPULSEGENERATOR_EXPORT DLTErrorType : DLTError
+            #NONE_ERROR                                      = 0x00000000,
+            #NO_LIFETIMES_TO_SIMULATE                        = 0x00000001,
+            #SWEEP_INVALID                                   = 0x00000002,
+            #NUMBER_OF_CELLS_INVALID                         = 0x00000004,
+            #PDS_UNCERTAINTY_INVALID                         = 0x00000008,
+            #MU_UNCERTAINTY_INVALID                          = 0x00000010,
+            #PULSE_RISE_TIME_INVALID                         = 0x00000020,
+            #PULSE_WIDTH_INVALID                             = 0x00000040,
+            #DELAY_INVALID                                   = 0x00000080,
+            #DELAY_LARGER_THAN_SWEEP                         = 0x00000100,
+            #INTENSITY_OF_LIFETIME_BELOW_ZERO                = 0x00000200,
+            #INTENSITY_OF_BKGRD_BELOW_ZERO                   = 0x00000400,
+            #INTENSITY_OF_PROMT_BELOW_ZERO                   = 0x00000800,
+            #INVALID_SUM_OF_WEIGTHS                          = 0x00001000,
+            #AMPLITUDE_AND_PULSE_POLARITY_MISFIT             = 0x00002000,
+            #AMPLITUDE_AND_PHS_MISFIT                        = 0x00004000,
+            #INVALID_LIFETIME_DISTRIBUTION_INPUT             = 0x00008000,
+            #INVALID_SUM_OF_PDS_IRF_INTENSITIES              = 0x00010000,
+            #INVALID_SUM_OF_MU_IRF_INTENSITIES               = 0x00020000,
+            #INVALID_VOLTAGE_BASELINE_JITTER                 = 0x00040000,
+            #INVALID_VOLTAGE_RND_NOISE                       = 0x00080000,
+            #INVALID_TIME_NONLINEARITY_FIXED_APERTURE_JITTER = 0x00100000,
+            #INVALID_TIME_NONLINEARITY_RND_APERTURE_JITTER   = 0x00200000,
+            #INVALID_DIGITIZATION_DEPTH                      = 0x00400000,
+            #INVALID_PHS_GRID								 = 0x00800000,
+            #INVALID_PHS_RESOLUTION							 = 0x01000000
+        #}
+        
+        errorCode = self.getError()
+        
+        if errorCode != 0:
+            print("DLTPulseGenerator initialized with error-code:")
+            
+            if errorCode & 1:
+                print("- no lifetimes enabled.")
+        
+            if errorCode & 2:
+                print("- invalid sweep.")
+        
+            if errorCode & 4:
+                print("- invalid number of cells.")
+        
+            if errorCode & 8:
+                print("- invalid PDS uncertainty.")
+        
+            if errorCode & 16:
+                print("- invalid MU uncertainty.")
+        
+            if errorCode & 32:
+                print("- invalid pulse rise time.")
+        
+            if errorCode & 64:
+                print("- invalid pulse width.")
+        
+            if errorCode & 128:
+                print("- invalid delay.")
+        
+            if errorCode & 256:
+                print("- delay > sweep.")
+        
+            if errorCode & 512:
+                print("- negative lifetimes detected.")
+        
+            if errorCode & 1024:
+                print("- negative background detected.")
+        
+            if errorCode & 2048:
+                print("- negative prompt intensity detected.")
+        
+            if errorCode & 5096:
+                print("- invalid sum of weights.")
+        
+            if errorCode & 10192:
+                print("- amplitude and pulse polarity misfit.")
+        
+            if errorCode & 20384:
+                print("- amplitude and phs misfit.")
+        
+            if errorCode & 40768:
+                print("- invalid input for lifetime distribution(s).")
+                
+            if errorCode & 81536:
+                print("- invalid sum of PDF IRF(s) intensities.")
+                
+            if errorCode & 163072:
+                print("- invalid sum of MU IRF(s) intensities.")
+                
+            if errorCode & 326144:
+                print("- invalid baseline jitter.")
+                
+            if errorCode & 652288:
+                print("- invalid noise.")
+                
+            if errorCode & 1304576:
+                print("- invalid time non-linearity fixed aperture jitter.")
+                
+            if errorCode & 2609152:
+                print("- invalid time non-linearity random aperture jitter.")
+                
+            if errorCode & 5218304:
+                print("- invalid digitization depth.")
+
+            if errorCode & 10436608:
+                print("- invalid input for phs grid detected.")
+                
+            if errorCode & 20873216:
+                print("- invalid input for phs resolution detected.")
+                
+            return False
+        else:
+            return True
         
     def emitPulses(self, pulseA, pulseB, triggerA, triggerB):
         ok = self.m_emitPulse(ctypes.c_double(triggerA), ctypes.c_double(triggerB))
 
         if ok == False:
+            pulseA.clear()
+            pulseB.clear()
+        
             return False
 
-        
         maxCell = (self.m_numberOfCells() - 1)
         
         pulseA.clear()
         pulseB.clear()
         
-        #read pulse-values:
+        # read out  pulses ...
+        
         for cell in range(0, maxCell):
             pulseA.append(DLTPointF(self.m_getTimeA(ctypes.c_int(cell)), self.m_getVoltageA(ctypes.c_int(cell))))
             pulseB.append(DLTPointF(self.m_getTimeB(ctypes.c_int(cell)), self.m_getVoltageB(ctypes.c_int(cell))))
