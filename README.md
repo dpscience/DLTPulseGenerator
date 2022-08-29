@@ -17,11 +17,11 @@ Support this project and keep always updated about recent software releases, bug
 ![badge-license](https://img.shields.io/badge/license-BSD-blue)
 
 Copyright (c) 2016-2022 Dr. Danny Petschke (danny.petschke@uni-wuerzburg.de). All rights reserved.<br><br>
-<b>DLTPulseGenerator</b> - A library for the simulation of lifetime spectra based on detector-output pulses
+<b>DLTPulseGenerator</b> - A library for the simulation of lifetime spectra based on detector-output pulses.
 
 ### ``Software Applications using DLTPulseGenerator Library``
 
-<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke
+<b>[DDRS4PALS](https://github.com/dpscience/DDRS4PALS) software</b> written by Danny Petschke.
 
 # Quickstart Guide
 
