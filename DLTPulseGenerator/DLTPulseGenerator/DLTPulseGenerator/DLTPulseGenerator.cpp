@@ -2830,6 +2830,13 @@ double DLifeTime::DLTPulseGenerator::nextLifeTime(bool *bPromt, bool *bValid) {
 }
 
 double DLifeTime::DLTPulseGenerator::uncertaintyA() {
+	if (!m_setupInfo.irfA.irf1PDS.enabled
+		&& !m_setupInfo.irfA.irf2PDS.enabled
+		&& !m_setupInfo.irfA.irf3PDS.enabled
+		&& !m_setupInfo.irfA.irf4PDS.enabled
+		&& !m_setupInfo.irfA.irf5PDS.enabled) 
+		return 0.;
+
 	const int fIndex = (int)(m_privatePtr.get()->m_distributionPDSA(m_privatePtr.get()->m_generator_PDSA));
 
 	double val = 0.0f;
@@ -2956,6 +2963,13 @@ double DLifeTime::DLTPulseGenerator::uncertaintyA() {
 }
 
 double DLifeTime::DLTPulseGenerator::uncertaintyB() {
+	if (!m_setupInfo.irfB.irf1PDS.enabled
+		&& !m_setupInfo.irfB.irf2PDS.enabled
+		&& !m_setupInfo.irfB.irf3PDS.enabled
+		&& !m_setupInfo.irfB.irf4PDS.enabled
+		&& !m_setupInfo.irfB.irf5PDS.enabled)
+		return 0.;
+
 	const int fIndex = (int)(m_privatePtr.get()->m_distributionPDSB(m_privatePtr.get()->m_generator_PDSB));
 
 	double val = 0.0f;
@@ -3083,6 +3097,13 @@ double DLifeTime::DLTPulseGenerator::uncertaintyB() {
 
 void DLifeTime::DLTPulseGenerator::addUncertaintyMU(double *val) {
 	if (!val)
+		return;
+
+	if (!m_setupInfo.irfMU.irf1MU.enabled
+		&& !m_setupInfo.irfMU.irf2MU.enabled
+		&& !m_setupInfo.irfMU.irf3MU.enabled
+		&& !m_setupInfo.irfMU.irf4MU.enabled
+		&& !m_setupInfo.irfMU.irf5MU.enabled)
 		return;
 
 	const int fIndex = (int)(m_privatePtr.get()->m_distributionMU(m_privatePtr.get()->m_generator_MU));
@@ -3286,12 +3307,13 @@ DLifeTime::DLTPointF DLifeTime::DLTPulseF::at(int index) const {
 }
 
 /** The class DLT_C_WRAPPER is used as singleton pattern to access from Ansi C functions.
-**	Thus, an interface to different programming languages such as matlab (mex-compiler) or
+**	It provides an interface to different programming languages such as matlab (mex-compiler) or
 **  python (ctypes-library) is provided.
 **
 **	An example how to use class DLTPulseGenerator in combination with class DLT_C_WRAPPER
 **  is given in python: pyDLTPulseGenerator
 **/
+
 DLT_C_WRAPPER *__sharedAccessPtr = nullptr;
 
 DLT_C_WRAPPER::DLT_C_WRAPPER() {
@@ -3322,11 +3344,6 @@ DLT_C_WRAPPER::~DLT_C_WRAPPER() {
 	if (m_accessPtr) {
 		delete m_accessPtr;
 		m_accessPtr = nullptr;
-	}
-
-	if (__sharedAccessPtr) {
-		delete __sharedAccessPtr;
-		__sharedAccessPtr = nullptr;
 	}
 }
 
@@ -3547,75 +3564,124 @@ void setPHSDistributionOfB(double resolution, int gridNumber, double distributio
 	DLT_C_WRAPPER::sharedInstance()->m_phsDistribution.distributionStopB = stopPHS;
 }
 
-void manipulate(DLifeTime::DLTIRF *irf, bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	if (irf)
-		return;
-
-	irf->enabled = enabled;
-	irf->functionType = functionType;
-	irf->intensity = intensity;
-	irf->uncertainty = uncertainty;
-	irf->relativeShift = relativeShift;
-}
-
 void setIRF_PDS_A_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf1PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_A_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf2PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_A_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf3PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_A_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf4PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_A_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfA.irf5PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_B_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf1PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_B_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf2PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_B_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf3PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_B_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf4PDS.relativeShift = relativeShift;
 }
 
 void setIRF_PDS_B_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfB.irf5PDS.relativeShift = relativeShift;
 }
 
 void setIRF_MU_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf1MU.relativeShift = relativeShift;
 }
 
 void setIRF_MU_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf2MU.relativeShift = relativeShift;
 }
 
 void setIRF_MU_3(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf3MU.relativeShift = relativeShift;
 }
 
 void setIRF_MU_4(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf4MU.relativeShift = relativeShift;
 }
 
 void setIRF_MU_5(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift) {
-	manipulate(&DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU, enabled, functionType, intensity, uncertainty, relativeShift);
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU.enabled = enabled;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU.functionType = functionType;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU.intensity = intensity;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU.uncertainty = uncertainty;
+	DLT_C_WRAPPER::sharedInstance()->m_setupInfo.irfMU.irf5MU.relativeShift = relativeShift;
 }
 
 void setATS(double ATS_in_nanoSeconds) {

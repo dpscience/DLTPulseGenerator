@@ -46,10 +46,10 @@
 #include <memory>
 #include <cstdint>
 
-#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "28.08.2022"
+#define DLTPULSEGENERATOR_VERSION_RELEASE_DATE "10.10.2022"
 
 #define DLTPULSEGENERATOR_MAJOR_VERSION 1
-#define DLTPULSEGENERATOR_MINOR_VERSION 4
+#define DLTPULSEGENERATOR_MINOR_VERSION 5
 
 #if COMPILE_AS_LIBRARY == 1
 #define DLTPULSEGENERATOR_EXPORT				   __declspec(dllexport) 
@@ -478,8 +478,6 @@ DLTPULSEGENERATOR_EXPORT_C extern DLifeTime::DLTError getLastError();
 
 DLTPULSEGENERATOR_EXPORT_C extern void init();
 DLTPULSEGENERATOR_EXPORT_C extern void update();
-
-DLTPULSEGENERATOR_EXPORT_C extern void manipulate(DLifeTime::DLTIRF *irf, bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift);
 
 DLTPULSEGENERATOR_EXPORT_C extern void setIRF_PDS_A_1(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift);
 DLTPULSEGENERATOR_EXPORT_C extern void setIRF_PDS_A_2(bool enabled, DLifeTime::DLTDistributionFunction::Function functionType, double intensity, double uncertainty, double relativeShift);

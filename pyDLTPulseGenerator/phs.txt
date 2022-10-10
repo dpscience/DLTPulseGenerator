@@ -1,4 +1,4 @@
-#Geant4 simulation output for BC422Q-0.5 crytsals of size 4x1x1cm
+#Geant4 simulation output for BC422Q-0.5 crystals of size 4x1x1cm
 #stop	#start	
 4092	334
 4086	330
